@@ -1,0 +1,68 @@
+.zoom {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+}
+
+
+/* <AXIS> */
+
+.axis line {
+    stroke: white;
+}
+
+.axis path {
+    stroke: #ddd;
+}
+
+path.points {
+    fill: white;
+}
+
+.axis text {
+    fill: #ddd;
+    font-family: 'Roboto Slab', optima, tahoma, sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+
+.focus .axis--x path.domain {
+    fill: #444;
+    stroke: none;
+}
+
+.label {
+    fill: #fff;
+}
+
+.label text {
+    font-size: 12px;
+    fill: #343;
+}
+
+.singleevent_line {
+    stroke-width: 1px;
+    stroke: #e4f1d6;
+    stroke-dasharray: 5 2;
+}
+
+.contextcircle {
+    fill: #e4f1d6;
+}
+
+.context path {
+    stroke-width: 2px;
+}
+
+.processheader {
+    fill: #e4f1d6;
+    opacity: 1;
+    font-weight: 700;
+    letter-spacing: -4px;
+    opacity: 0.2;
+}
+
+.main {
+    color: #ccc;
+}

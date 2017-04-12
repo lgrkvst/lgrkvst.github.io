@@ -1,0 +1,48 @@
+  [
+    {
+        "name": "Rodenskolan i Norrtälje",
+        "type": "study",
+        "description": "Treårig teknisk gymnasieutbildning"
+    }, {
+        "name": "Värnplikt",
+        "type": "study",
+        "description": "Plutonsbefäl, MekB10, Strängnäs"
+    }, {
+        "name": "Uppsala Universitet",
+        "type": "study",
+        "description": "Master of Computer Science"
+    }, {
+        "name": "TextCenter AB",
+        "type": "work",
+        "description": "Front developer, copy writing"
+    }, {
+        "name": "Primona AB",
+        "type": "work",
+        "description": "Föreläsare, databas-driven webbutveckling"
+    }, {
+        "name": "bytewize AB",
+        "type": "work",
+        "description": "Business Development, sales"
+    }, {
+        "name": "Nordic Touch AB",
+        "type": "work",
+        "description": "Head of Marketing, Sweden and Finland"
+    }, {
+        "name": "CONNECT Sverige",
+        "type": "work",
+        "description": "Projektledare"
+    }, {
+        "name": "SEB (konsult)",
+        "type": "work",
+        "description": "SEB (förvaltning)"
+    }, {
+        "name": "SEB (arkitekt)",
+        "type": "work"
+    }, {
+        "name": "Certifierad IT-arkitekt",
+        "type": "study"
+    }, {
+        "name": "SEB (intraprenör)",
+        "type": "work"
+    }
+]

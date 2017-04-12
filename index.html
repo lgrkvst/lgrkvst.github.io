@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="msapplication-tap-highlight" content="no">
+<meta name="description" content="Continuous Delivery Home">
+<title>Curriculum Vitae &mdash; Christian Lagerkvist</title>
+<link rel="stylesheet" href="materialize/css/materialize.css">
+<link rel="stylesheet" href="css/greenfield.css">
+<link rel="stylesheet" href="css/chart.css">
+</head>
+
+<body>
+<section class="main">
+<div class="container">
+<div class="row">
+<div class="col s7 heroheader">
+<h2>
+			<div class="outdent">curriculum vitae</div>
+			<em>VISUALISED</em>
+		</h2>
+<h5 class="byline">Christian Lagerkvist</h5>
+</div>
+</div>
+<div class="row">
+<!-- Switch -->
+<!-- <div class="switch right">
+<label>
+time
+<input type="checkbox" onchange="javascript:toggle();">
+<span class="lever light-green lighten-4"></span> geo
+</label>
+</div>
+ -->
+<svg width="900" height="400">
+<defs>
+<filter id="dropshadow" height="200%">
+<feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+<!-- stdDeviation is how much to blur -->
+<feOffset dx="0" dy="0" result="offsetblur" />
+<!-- how much to offset -->
+<feMerge>
+<feMergeNode/>
+<!-- this contains the offset blurred image -->
+<feMergeNode in="SourceGraphic" />
+<!-- this contains the element that the filter is applied to -->
+</feMerge>
+</filter>
+</defs>
+</svg>
+</div>
+</div>
+</section>
+</body>
+<script src="js/lib/d3.min.js"></script>
+<script>
+var svg = d3.select("svg"),
+    margin = {
+        top: 20,
+        right: 30,
+        bottom: 110,
+        left: 0
+    },
+    margin2 = {
+        top: 330,
+        right: 30,
+        bottom: 30,
+        left: 0
+    },
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom,
+    height2 = +svg.attr("height") - margin2.top - margin2.bottom;
+
+var x = d3.scaleTime().range([0, width]),
+    x2 = d3.scaleTime().range([0, width]),
+    y = d3.scaleLinear().range([height, 0]),
+    y2 = d3.scaleLinear().range([height2, 0]);
+
+var startRange = [250, width];
+
+var xAxis = d3.axisBottom(x),
+    xAxis2 = d3.axisBottom(x2),
+    yAxis = d3.axisLeft(y);
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var focus = svg.append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = svg.append("g")
+    .attr("class", "context")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+
+d3.queue()
+    .defer(d3.json, "data/cv_stack.json")
+    .defer(d3.json, "data/cv_descriptions.json")
+    .await(drawTimeline);
+
+
+function drawTimeline(error, stack, descriptions) {
+    if (error) throw new Error("no data");
+    var yyyy = d3.timeParse("%Y");
+    stack.forEach(year => {
+        year["date"] = yyyy(year["date"]);
+        descriptions.forEach(description => {
+            if (!year[description.name]) year[description.name] = 0.01;
+        });
+    });
+
+    var brush = d3.brushX()
+        .extent([
+            [0, 0],
+            [width, height2]
+        ])
+        .on("brush end", brushed);
+
+    var zoom = d3.zoom()
+        .scaleExtent([1, Infinity])
+        .translateExtent([
+            [0, 0],
+            [width, height]
+        ])
+        .extent([
+            [0, 0],
+            [width, height]
+        ])
+        .on("zoom", zoomed);
+
+    function axis_callback() {
+        // render x-axis as bar:
+        d3.select(".focus").select("path.domain").attr("d", "M0,0L0,28L840,28L840,0Z");
+    }
+
+    // Linedrawer – Timeline sets x() itself
+
+    var area = d3.area()
+        .curve(d3.curveCatmullRom)
+        .x(function(d) {
+            return x(d.data.date);
+        })
+        .y0(function(d) {
+            return y(d[0]);
+        })
+        .y1(function(d) {
+            return y(d[1]);
+        });
+
+    studyArea = d3.area()
+        .x(e => e[0])
+        .y(e => e[1])
+        .curve(d3.curveStepBefore);
+
+    var linkLine = d3.line()
+        .x(e => (e.x))
+        .y(e => (e.y))
+        .curve(d3.curveBasis);
+
+
+
+    x.domain([stack[0].date, stack[stack.length - 1].date]);
+    y.domain([-1, 1]);
+    x2.domain(x.domain());
+    y2.domain(y.domain());
+
+
+
+    //                                                ,,
+    //                                                db
+
+    //                                      ,pP"Ybd `7MM  `7MMpMMMb.pMMMb.
+    //                                      8I   `"   MM    MM    MM    MM
+    //                                      `YMMMa.   MM    MM    MM    MM
+    //                                      L.   I8   MM    MM    MM    MM
+    //                                      M9mmmP' .JMML..JMML  JMML  JMML.
+
+    /*
+        var beadLinks = [];
+        data.filter(d => d.values.length > 2).forEach(process => {
+            for (var i = 0; i < process.values.length - 1; i++) {
+                beadLinks.push({
+                    source: process.values[i],
+                    target: process.values[i + 1],
+                    interbead: true
+                });
+            }
+        });
+
+        // shadow eventlog for label nodes
+        var labelNodes = [];
+        eventlog.forEach(event => {
+            var label = {
+                type: event.type
+            };
+            labelNodes.push(label);
+            beadLinks.push({
+                source: event,
+                target: label,
+                label: true
+            })
+        });
+
+        simulation = d3.forceSimulation(d3.merge([eventlog, labelNodes]))
+            // .force("charge", d3.forceManyBody().strength(-100))
+            // .force("collide", d3.forceCollide(30))
+            .force("x", d3.forceX(width * 2).strength(0.01))
+            .force("y", d3.forceY(o => {
+                return auditLine.y()(o) - stepHeight(o) * 10
+            }).strength(1))
+            .force("links", d3.forceLink(beadLinks).distance(10))
+            .on("tick", tick);
+
+        var g_nodes = focus.append("g").attr("class", "nodes").style("filter", "url(#dropshadow)");
+
+        var links = focus.selectAll("path.bead").data(simulation.force("links").links());
+        var auditPath = links.enter().filter(l => l.interbead).insert("path", ":first-child")
+            .attr("class", "bead");
+        var shadowPath = links.enter().filter(l => l.interbead).insert("path", ":first-child")
+            .attr("class", "shadowbead").style("filter", "url(#dropshadow)").style("opacity", 0.3);
+        var processheader = focus.selectAll("text").data(data.filter(d => d.values.length > 2)).enter().append("text").attr("class", "processheader").text(o => o.values[0].process).attr("y", height / 4 - margin.top);
+
+        var labels = links.enter().filter(l => l.label).append("g")
+            .style("filter", "url(#dropshadow)")
+            .attr("class", "label").each(function() {
+                d3.select(this)
+                    .append("text")
+                    .text(o => {
+                        return o.source.target ? o.source.type + " (" + o.source.target + ")" : o.source.type;
+
+                    });
+
+                d3.select(this)
+                    .append("path");
+
+                var labelmargin = 4;
+
+                d3.select(this).insert("rect", ":first-child")
+                    .attr("x", function(d) {
+                        var text = this.parentNode.childNodes[1].getBBox();
+                        return text.x - labelmargin;
+                    })
+                    .attr("y", function(d) {
+                        var text = this.parentNode.childNodes[1].getBBox();
+                        return text.y;
+                    })
+                    .attr("width", function(d) {
+                        var text = this.parentNode.childNodes[1].getBBox();
+                        return d.width = text.width + 2 * labelmargin;
+                    })
+                    .attr("height", function(d) {
+                        var text = this.parentNode.childNodes[1].getBBox();
+                        return d.height = text.height;
+                    });
+                d3.select(this).insert("path", ":first-child");
+            })
+
+        var beads = g_nodes.selectAll("g.bead").data(eventlog, n => n.date.getTime() + n.pid);
+
+        beads = beads.enter().append("g").attr("class", "bead").each(function(o) {
+            d3.select(this).append("use").attr("xlink:href", o => "#" + o.device);
+            d3.select(this).filter(single_event).insert("path", ":first-child").attr("class", "singleevent_line").attr("d", o => "M0,0L0,-" + auditLine.y()(0));
+
+        }).merge(beads);
+
+
+        function tick() {
+
+            d3.selectAll(".processheader")
+                .attr("x", o => {
+                    var dateRange = d3.extent(o.values, o => o.date);
+                    var coordRange = dateRange.map(d => {
+                        return auditLine.x()({
+                            date: d
+                        });
+                    });
+                    return coordRange[0];
+                })
+                .style("font-size", o => {
+                    var dateRange = d3.extent(o.values, o => o.date);
+                    var coordRange = dateRange.map(d => {
+                        return auditLine.x()({
+                            date: d
+                        });
+                    });
+                    var width = coordRange[1] - coordRange[0];
+                    return width / 7;
+                });
+
+            d3.selectAll("path.points").attr("d", o => {
+                var pt = o.location.split(",").map(o => +o);
+                return geopath(geojson_pt(pt));
+            });
+
+            beads.attr("transform", o => {
+                return "translate(" + o.fx + "," + o.fy + ")";
+            });
+
+            auditPath.attr("d", link => {
+                if (geo) {
+                    return swoosh(flying_arc(link));
+                } else {
+                    return auditLine([link.source, link.target]);
+                }
+            });
+
+            shadowPath.attr("d", link => {
+                if (geo) {
+                    var source = link.source.location.split(",").map(o => +o);
+                    var target = link.target.location.split(",").map(o => +o);
+
+                    return geopath(geojson_line(source, target));
+                } else {
+                    return "";
+                }
+            });
+
+            d3.selectAll("g.label")
+                .attr("transform", l => "translate(" + l.target.x + "," + l.target.y + ")")
+                .each(function(l) {
+                    var delta = [l.source.x - l.target.x, l.source.y - l.target.y];
+
+                    d3.select(this).select("path").attr("d", "M" + delta.join() + "L0,0L7,0");
+                });
+        }
+        */
+
+    // focus.append("g")
+    //     .attr("class", "axis axis--y")
+    //     .call(yAxis);
+
+    var keys = descriptions.map(o => o.name);
+    	console.log(stack);
+
+    var data = d3.stack().keys(keys).order(d3.stackOrderNone).offset(d3.stackOffsetDiverging)(stack);
+
+	var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var c = focus.append("g")
+    	.attr("transform", "translate(0,0)")
+        .selectAll("path")
+        .data(data)
+        .enter()
+        .append("path")
+        .attr("class", "bead")
+        .style("fill", (o,i) => color(i));
+
+    focus.append("g")
+        .attr("class", "axis axis--x focus")
+        .attr("transform", "translate(0," + (y(0) - 14) + ")")
+        .call(xAxis);
+
+    context.append("g")
+        .attr("class", "axis axis--x context")
+        .attr("transform", "translate(0," + height2 + ")")
+        .call(xAxis2);
+
+    context.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .call(brush.move, startRange);
+
+    svg.append("rect")
+        .attr("class", "zoom")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+        .call(zoom);
+
+
+
+    function brushed() {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
+        var s = d3.event.selection || x2.range();
+        x.domain(s.map(x2.invert, x2));
+
+        focus.select(".axis--x").call(xAxis);
+        svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+            .scale(width / (s[1] - s[0]))
+            .translate(-s[0], 0));
+
+        focus.selectAll("path").attr("d", (o,i) => {
+        	if (!o) {return "";}
+        	return (area(o));
+        });
+
+        // events.forEach(node => {
+        //     node.fx = x(node.date);
+        //     node.fy = workArea.y()(node);
+        // });
+
+        // fix x-axis into bar:
+        axis_callback();
+        // simulation.alpha(1);
+        // simulation.restart();
+
+
+
+    }
+
+    function zoomed() {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+        var t = d3.event.transform;
+        x.domain(t.rescaleX(x2).domain());
+
+        focus.select(".axis--x").call(xAxis);
+        context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+
+        // fix x-axis into bar:
+        // simulation.alpha(1);
+        // simulation.restart();
+    }
+
+}
+</script>
