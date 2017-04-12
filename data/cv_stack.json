@@ -1,57 +1,57 @@
 [ 	
 	{
         "date": 1992,
-        "Rodenskolan i Norrtälje": -1
+        "Rodenskolan i Norrtälje": 1
     }, {
         "date": 1993,
-        "Rodenskolan i Norrtälje": -1
+        "Rodenskolan i Norrtälje": 1
     }, {
         "date": 1994,
-        "Rodenskolan i Norrtälje": -1
+        "Rodenskolan i Norrtälje": 1
     }, {
         "date": 1995,
-        "Rodenskolan i Norrtälje": -0.5,
-        "Värnplikt": -0.5
+        "Rodenskolan i Norrtälje": 0.5,
+        "Värnplikt": 0.5
     }, {
         "date": 1996,
-        "Värnplikt": -0.5,
-        "Uppsala Universitet": -0.5
+        "Värnplikt": 0.5,
+        "Uppsala Universitet": 0.5
     }, {
         "date": 1997,
         "TextCenter AB": 0.1,
-        "Uppsala Universitet": -1
+        "Uppsala Universitet": 1
     }, {
         "date": 1998,
         "TextCenter AB": 0.25,
-        "Uppsala Universitet": -1
+        "Uppsala Universitet": 1
     }, {
         "date": 1999,
-        "Uppsala Universitet": -0.5,
+        "Uppsala Universitet": 0.5,
         "TextCenter AB": 0.25,
         "Primona AB": 0.25
     }, {
         "date": 2000,
-        "Uppsala Universitet": -1,
+        "Uppsala Universitet": 1,
 		"TextCenter AB": 0.25
     }, {
         "date": 2001,
-        "Uppsala Universitet": -0.75,
+        "Uppsala Universitet": 0.8,
 		"TextCenter AB": 0.2
     }, {
         "date": 2002,
-        "Uppsala Universitet": -1,
+        "Uppsala Universitet": 1,
         "TextCenter AB":0.1
     }, {
         "date": 2003,
-        "Uppsala Universitet": -0.75,
+        "Uppsala Universitet": 0.75,
         "TextCenter AB": 0.25
     }, {
         "date": 2004,
-        "Uppsala Universitet": -0.5,
+        "Uppsala Universitet": 0.5,
         "TextCenter AB": 0.5
     }, {
         "date": 2005,
-        "Uppsala Universitet": -0.35,
+        "Uppsala Universitet": 0.35,
         "TextCenter AB": 0.15,
         "bytewize AB": 0.3,
         "Nordic Touch AB": 0.2
@@ -85,7 +85,7 @@
     }, {
         "date": 2014,
         "SEB (arkitekt)": 0.9,
-        "Certifierad IT-arkitekt": -0.1
+        "Certifierad IT-arkitekt": 0.1
     }, {
         "date": 2015,
         "SEB (arkitekt)": 1

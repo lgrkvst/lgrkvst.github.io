@@ -37,8 +37,8 @@ time
  -->
 <svg width="900" height="400">
 <defs>
-<filter id="dropshadow" height="200%">
-<feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+<filter id="dropshadow"height="200%">
+<feGaussianBlur in="SourceAlpha" stdDeviation="2" />
 <!-- stdDeviation is how much to blur -->
 <feOffset dx="0" dy="0" result="offsetblur" />
 <!-- how much to offset -->
@@ -56,6 +56,7 @@ time
 </section>
 </body>
 <script src="js/lib/d3.min.js"></script>
+<script src="js/lib/d3-scale-chromatic.v1.min.js"></script>
 <script>
 var svg = d3.select("svg"),
     margin = {
@@ -79,7 +80,7 @@ var x = d3.scaleTime().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
     y2 = d3.scaleLinear().range([height2, 0]);
 
-var startRange = [250, width];
+var startRange = [200, width];
 
 var xAxis = d3.axisBottom(x),
     xAxis2 = d3.axisBottom(x2),
@@ -109,6 +110,7 @@ d3.queue()
 function drawTimeline(error, stack, descriptions) {
     if (error) throw new Error("no data");
     var yyyy = d3.timeParse("%Y");
+
     stack.forEach(year => {
         year["date"] = yyyy(year["date"]);
         descriptions.forEach(description => {
@@ -116,6 +118,36 @@ function drawTimeline(error, stack, descriptions) {
         });
     });
 
+    var studystack = JSON.parse(JSON.stringify(stack)),
+        workstack = JSON.parse(JSON.stringify(stack));
+
+    var study_or_work = {};
+    descriptions.forEach(o => {
+    	study_or_work[o.name] = o.type;
+    });
+
+    function is_work(item) {
+    	return study_or_work[item] == "work";
+    }
+
+    studystack.forEach(year => {
+        year["date"] = new Date(year["date"]);
+    	for (item in year) {
+    		if (item != "date" && is_work(item)) {
+    			delete(year[item]);
+    		}
+    	}
+    });
+
+    workstack.forEach(year => {
+        year["date"] = new Date(year["date"]);
+    	for (item in year) {
+    		if (item != "date" && !is_work(item)) {
+    			delete(year[item]);
+    		}
+    	}
+    });
+    
     var brush = d3.brushX()
         .extent([
             [0, 0],
@@ -137,14 +169,15 @@ function drawTimeline(error, stack, descriptions) {
 
     function axis_callback() {
         // render x-axis as bar:
-        d3.select(".focus").select("path.domain").attr("d", "M0,0L0,28L840,28L840,0Z");
+        d3.select(".focus").select("path.domain").attr("d", "M0,0L0,28L870,28L880,14L870,0Z");
     }
 
     // Linedrawer – Timeline sets x() itself
 
-    var area = d3.area()
+    var workarea = d3.area()
         .curve(d3.curveCatmullRom)
         .x(function(d) {
+        	
             return x(d.data.date);
         })
         .y0(function(d) {
@@ -154,10 +187,17 @@ function drawTimeline(error, stack, descriptions) {
             return y(d[1]);
         });
 
-    studyArea = d3.area()
-        .x(e => e[0])
-        .y(e => e[1])
-        .curve(d3.curveStepBefore);
+    var studyarea = d3.area()
+        .curve(d3.curveCatmullRom)
+        .x(function(d) {
+            return x(d.data.date);
+        })
+        .y0(function(d) {
+            return y(-d[1]);
+        })
+        .y1(function(d) {
+            return y(-d[0]);
+        });
 
     var linkLine = d3.line()
         .x(e => (e.x))
@@ -167,7 +207,7 @@ function drawTimeline(error, stack, descriptions) {
 
 
     x.domain([stack[0].date, stack[stack.length - 1].date]);
-    y.domain([-1, 1]);
+    y.domain([-1.1, 1.1]);
     x2.domain(x.domain());
     y2.domain(y.domain());
 
@@ -336,25 +376,39 @@ function drawTimeline(error, stack, descriptions) {
     //     .attr("class", "axis axis--y")
     //     .call(yAxis);
 
-    var keys = descriptions.map(o => o.name);
-    	console.log(stack);
+    var workkeys = descriptions.filter(o => o.type == "work").map(o => o.name);
+    var studykeys = descriptions.filter(o => o.type == "study").map(o => o.name);
 
-    var data = d3.stack().keys(keys).order(d3.stackOrderNone).offset(d3.stackOffsetDiverging)(stack);
+    var workdata = d3.stack().keys(workkeys).order(d3.stackOrderNone)(workstack);
 
-	var color = d3.scaleOrdinal(d3.schemeCategory10);
+    var studydata = d3.stack().keys(studykeys).order(d3.stackOrderInsideOut)(studystack);
 
-    var c = focus.append("g")
-    	.attr("transform", "translate(0,0)")
+    var workcolor = d3.scaleSequential(d3.interpolateOranges).domain([0, 10]);
+	var studycolor = d3.scaleSequential(d3.interpolateBlues).domain([5, -2]);
+
+
+    focus.append("g")
+        .attr("transform", "translate(0,-10)")
         .selectAll("path")
-        .data(data)
+        .data(workdata)
         .enter()
         .append("path")
-        .attr("class", "bead")
-        .style("fill", (o,i) => color(i));
+        .attr("class", "work")
+        .style("fill", (o, i) => workcolor(i));
+
+    focus.append("g")
+        .attr("transform", "translate(0,10)")
+        .selectAll("path")
+        .data(studydata)
+        .enter()
+        .append("path")
+        .attr("class", "study")
+        .style("fill", (o, i) => studycolor(i));
 
     focus.append("g")
         .attr("class", "axis axis--x focus")
         .attr("transform", "translate(0," + (y(0) - 14) + ")")
+        .style("filter", "url(#dropshadow)")
         .call(xAxis);
 
     context.append("g")
@@ -386,10 +440,8 @@ function drawTimeline(error, stack, descriptions) {
             .scale(width / (s[1] - s[0]))
             .translate(-s[0], 0));
 
-        focus.selectAll("path").attr("d", (o,i) => {
-        	if (!o) {return "";}
-        	return (area(o));
-        });
+        focus.selectAll(".work").attr("d", workarea);
+        focus.selectAll(".study").attr("d", studyarea);
 
         // events.forEach(node => {
         //     node.fx = x(node.date);
