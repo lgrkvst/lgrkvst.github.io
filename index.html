@@ -62,6 +62,7 @@ time
 </body>
 <script src="js/lib/d3.min.js"></script>
 <script src="js/lib/d3-scale-chromatic.v1.min.js"></script>
+<script src="js/lib/least-squares.js"></script>
 <script>
 var svg = d3.select("svg"),
     margin = {
@@ -124,13 +125,37 @@ d3.queue()
 function drawTimeline(error, stack, descriptions) {
     if (error) throw new Error("no data");
     var yyyy = d3.timeParse("%Y");
+    var labels = [], _labels = {};
 
     stack.forEach(year => {
         year["date"] = yyyy(year["date"]);
+
+        // determine label x positions
+    	for (job in year) {
+    		if (job != "date") {
+    			if (!_labels[job]) {
+    				_labels[job] = {};
+    				_labels[job]["product"] = 0;
+    				_labels[job]["weight"] = 0;
+    				_labels[job]["top"] = 0;
+    			}
+    			if (job == "Värnplikt") console.log(job);
+	    		_labels[job]["product"] += year.date.getTime()*year[job];
+	    		_labels[job]["weight"] += year[job];
+	    		if (_labels[job]["top"] < year[job]) _labels[job]["top"] = year[job];
+    		}
+    	}
+
         descriptions.forEach(description => {
             if (!year[description.name]) year[description.name] = 0.01;
         });
+
     });
+
+    for (_label in _labels) {
+    	labels.push({"date": new Date(_labels[_label]["product"]/_labels[_label]["weight"]), "name": _label, "y": _labels[_label]["top"]});
+    }
+
 
     var studystack = JSON.parse(JSON.stringify(stack)),
         workstack = JSON.parse(JSON.stringify(stack));
@@ -455,21 +480,53 @@ function drawTimeline(error, stack, descriptions) {
                 })
         })
 
-    focus.selectAll(".stream")
-        .on("mouseover", function(d, i) {
-        	d3.select(this).style("fill", "white");
+    // focus.selectAll(".stream")
+    //     .on("mouseover", function(d, i) {
+    //     	d3.select(this).style("fill", "white");
 
-        })
-        .on("mouseout", function(d, i) {
-            svg.selectAll(".layer")
-                .transition()
-                .duration(250)
-                .attr("opacity", "1");
-            d3.select(this)
-                .classed("hover", false)
-                .attr("stroke-width", "0px"), indicator.style("visibility", "hidden");
-        })
+    //     })
+    //     .on("mouseout", function(d, i) {
+    //         svg.selectAll(".layer")
+    //             .transition()
+    //             .duration(250)
+    //             .attr("opacity", "1");
+    //         d3.select(this)
+    //             .classed("hover", false)
+    //             .attr("stroke-width", "0px"), indicator.style("visibility", "hidden");
+    //     })
 
+
+    //   ,,           ,,                  ,,
+    // `7MM          *MM                `7MM
+    //   MM           MM                  MM
+    //   MM   ,6"Yb.  MM,dMMb.   .gP"Ya   MM  ,pP"Ybd
+    //   MM  8)   MM  MM    `Mb ,M'   Yb  MM  8I   `"
+    //   MM   ,pm9MM  MM     M8 8M""""""  MM  `YMMMa.
+    //   MM  8M   MM  MM.   ,M9 YM.    ,  MM  L.   I8
+    // .JMML.`Moo9^Yo.P^YbmdP'   `Mbmmd'.JMML.M9mmmP'
+
+  	focus.selectAll("g.label")
+  		.data(labels)
+  		.enter()
+		.append("g")
+  		.attr("class", "label")
+  		.append("text")
+  		.attr("y", o => {
+  			var sign = is_work(o.name) ? 1 : -1;
+  			return y(sign * Math.sqrt(o.y)/1.3);
+  		})
+  		.text(o => o.name);
+
+  	//                       ,,
+  	//                       db
+  	
+  	//  ,6"Yb.  `7M'   `MF'`7MM  ,pP"Ybd
+  	// 8)   MM    `VA ,V'    MM  8I   `"
+  	//  ,pm9MM      XMX      MM  `YMMMa.
+  	// 8M   MM    ,V' VA.    MM  L.   I8
+  	// `Moo9^Yo..AM.   .MA..JMML.M9mmmP'
+  	
+  	
 
     focus.append("g")
         .attr("class", "axis axis--x focus")
@@ -512,6 +569,7 @@ function drawTimeline(error, stack, descriptions) {
 
         focus.selectAll(".work").attr("d", workarea);
         focus.selectAll(".study").attr("d", studyarea);
+        focus.selectAll(".label").selectAll("text").attr("x", o => x(o.date));
 
         // events.forEach(node => {
         //     node.fx = x(node.date);
@@ -536,6 +594,7 @@ function drawTimeline(error, stack, descriptions) {
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
         focus.selectAll(".work").attr("d", workarea);
         focus.selectAll(".study").attr("d", studyarea);
+        focus.selectAll(".label").selectAll("text").attr("x", o => x(o.date));
 
         // fix x-axis into bar:
         axis_callback();

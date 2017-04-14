@@ -62,6 +62,7 @@ path.points {
 .label text {
     font-size: 12px;
     fill: #343;
+    text-anchor: middle;
 }
 
 .singleevent_line {
