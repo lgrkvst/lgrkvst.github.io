@@ -19,12 +19,35 @@ path.points {
     fill: white;
 }
 
-.axis text {
+.study {
+    stroke: #5e8197;
+    stroke-width: 0.3;
+}
+
+.work {
+    stroke: #ffb070;
+    stroke-width: 0.3;
+}
+
+.focus .axis--x text {
     fill: #ddd;
     font-family: 'Roboto Slab', optima, tahoma, sans-serif;
     font-weight: 400;
     font-size: 16px;
     text-transform: uppercase;
+}
+
+.focus .axis--y text {
+    fill: #444;
+    font-family: 'Roboto Slab', optima, tahoma, sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+.context .axis--x text {
+    fill: #666;
+    font-size: 12px;
 }
 
 .focus .axis--x path.domain {
