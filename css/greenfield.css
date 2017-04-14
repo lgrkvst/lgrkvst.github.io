@@ -1,6 +1,5 @@
-
 body {
-    color:#fff;
+    color: #fff;
 }
 
 #logo {
@@ -17,11 +16,11 @@ body {
 }
 
 .preamble {
-    position:relative;
-    top:30px;
+    position: relative;
+    top: 30px;
 }
 
-.switch label{
+.switch label {
     color: #e4f1d6;
 }
 
@@ -33,7 +32,7 @@ body {
     position: relative;
     height: 100vh;
     min-height: 900px;
-/*    z-index:-2;*/
+    /*    z-index:-2;*/
 }
 
 .greenfield .byline {
@@ -41,8 +40,8 @@ body {
 }
 
 .sectionputty {
-    position:relative;
-    z-index:1;
+    position: relative;
+    z-index: 1;
 }
 
 .bluefield {
@@ -54,7 +53,7 @@ body {
     position: relative;
     height: 100vh;
     min-height: 900px;
-/*    z-index:-2;*/
+    /*    z-index:-2;*/
 }
 
 .bluefield .byline {
@@ -70,7 +69,7 @@ body {
     position: relative;
     height: 100vh;
     min-height: 900px;
-/*    z-index:-2;*/
+    /*    z-index:-2;*/
 }
 
 .yellowfield .byline {
@@ -91,7 +90,7 @@ body {
     position: relative;
     height: 100vh;
     min-height: 900px;
-/*    z-index:-2;*/
+    /*    z-index:-2;*/
 }
 
 .redfield .byline {
@@ -101,44 +100,50 @@ body {
 .redfield p a {
     color: #ff9c9c
 }
+
 .byline {
     display: inline;
     padding: 0 12px 0 12px;
     line-height: 0.5;
-    color:#fff;
+    color: #fff;
     font-weight: 200;
-    letter-spacing:-2px;
+    letter-spacing: -2px;
 }
 
 label {
-    color:inherit;
+    color: inherit;
 }
 
-.checkgreen[type="checkbox"].filled-in:checked + label:after{
-     border: 2px solid #dcedc8;
-     background-color: #dcedc8;
+.checkgreen[type="checkbox"].filled-in:checked + label:after {
+    border: 2px solid #dcedc8;
+    background-color: #dcedc8;
 }
 
 .blackline {
     padding: 12px 12px 12px 12px;
-    color:#fff;
+    color: #fff;
     background-color: #333;
 }
 
 .heroheader .byline {
     margin-left: 2.5em;
 }
+
 .outdent {
-    position:relative;
+    position: relative;
     left: -15px;
+    font-size: 0.8em;
+    font-weight: 200;
+    letter-spacing: -2px;
+    bottom: -7px;
 }
 
 .metrics {
-    width:110px;
+    width: 110px;
     position: absolute;
-    right:0;
-    top:0;
-    margin-top:80px
+    right: 0;
+    top: 0;
+    margin-top: 80px
 }
 
 .metrics h5 {
@@ -151,35 +156,34 @@ label {
     background-color: #94AF5E;
     margin-bottom: 10px;
 }
+
 .metrics .card-title {
-    font-size:3.6em;
+    font-size: 3.6em;
     font-weight: 700;
     letter-spacing: -1px;
 }
 
 .metrics .card p {
-    font-size:1.5em;
-    margin:0;
+    font-size: 1.5em;
+    margin: 0;
     position: relative;
-    top:-9px;
+    top: -9px;
     line-height: 0.9;
     font-weight: 300;
 }
 
-
 .heroimage {
     position: relative;
-/*    z-index: -1;*/
+    /*    z-index: -1;*/
 }
 
 p {
-    font-size:1.25em;
+    font-size: 1.25em;
     line-height: 1.2em;
-    margin-top:0;
-    margin-bottom:8px;
+    margin-top: 0;
+    margin-bottom: 8px;
     letter-spacing: -0.5px;
 }
-
 
 footer.page-footer {
     margin-top: 0;
@@ -187,7 +191,6 @@ footer.page-footer {
     background: url(../img/footerfield.jpg) no-repeat;
     background-position: 50% 0%;
     position: relative;
-
 }
 
 .chart {
