@@ -19,14 +19,22 @@ path.points {
     fill: white;
 }
 
-.study {
+.studyarea {
     stroke: #5e8197;
     stroke-width: 0.3;
 }
 
-.work {
+.workarea {
     stroke: #ffb070;
     stroke-width: 0.3;
+}
+
+.worklabel rect {
+    fill:#e25609;
+}
+
+.studylabel rect {
+    fill:#368eb0;
 }
 
 .focus .axis--x text {
@@ -61,7 +69,7 @@ path.points {
 
 .label text {
     font-size: 12px;
-    fill: #343;
+    fill: white;
     text-anchor: middle;
 }
 

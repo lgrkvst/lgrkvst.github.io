@@ -138,11 +138,14 @@ function drawTimeline(error, stack, descriptions) {
     				_labels[job]["product"] = 0;
     				_labels[job]["weight"] = 0;
     				_labels[job]["top"] = 0;
+    				_labels[job]["topyear"] = 0;
     			}
     			if (job == "Värnplikt") console.log(job);
 	    		_labels[job]["product"] += year.date.getTime()*year[job];
 	    		_labels[job]["weight"] += year[job];
-	    		if (_labels[job]["top"] < year[job]) _labels[job]["top"] = year[job];
+	    		if (_labels[job]["top"] < year[job]) {
+	    			_labels[job]["top"] = year[job];
+	    		}
     		}
     	}
 
@@ -156,6 +159,7 @@ function drawTimeline(error, stack, descriptions) {
     	labels.push({"date": new Date(_labels[_label]["product"]/_labels[_label]["weight"]), "name": _label, "y": _labels[_label]["top"]});
     }
 
+    console.log(labels)
 
     var studystack = JSON.parse(JSON.stringify(stack)),
         workstack = JSON.parse(JSON.stringify(stack));
@@ -446,7 +450,7 @@ function drawTimeline(error, stack, descriptions) {
         .each(function(o, i) {
             d3.select(this)
                 .append("path")
-                .attr("class", "stream work")
+                .attr("class", "stream workarea")
                 .attr("fill", "url(#work_gradient_" + i + ")");
             d3.select(this)
                 .append("defs")
@@ -467,7 +471,7 @@ function drawTimeline(error, stack, descriptions) {
         .each(function(o, i) {
             d3.select(this)
                 .append("path")
-                .attr("class", "stream study")
+                .attr("class", "stream studyarea")
                 .attr("fill", "url(#study_gradient_" + i + ")");
             d3.select(this)
                 .append("defs")
@@ -505,17 +509,36 @@ function drawTimeline(error, stack, descriptions) {
     //   MM  8M   MM  MM.   ,M9 YM.    ,  MM  L.   I8
     // .JMML.`Moo9^Yo.P^YbmdP'   `Mbmmd'.JMML.M9mmmP'
 
+
   	focus.selectAll("g.label")
   		.data(labels)
   		.enter()
 		.append("g")
-  		.attr("class", "label")
+  		.attr("class", o => {
+  			return "label " + (is_work(o.name) ? "worklabel" : "studylabel");
+  		})
   		.append("text")
   		.attr("y", o => {
   			var sign = is_work(o.name) ? 1 : -1;
-  			return y(sign * Math.sqrt(o.y)/1.3);
+  			return y(sign * Math.sqrt(o.y)/1.2);
   		})
-  		.text(o => o.name);
+  		.text(o => o.name)
+  		.each(rectify);
+
+  	function rectify(d,i) {
+            var labelmargin = 4;
+            var parent = d3.select(this.parentNode);
+            var box = this.getBBox();
+            box.x += d3.select(this).attr("x");
+
+            parent.insert("rect", ":first-child")
+            	.attr("x", box.x-labelmargin)
+            	.attr("y", box.y)
+            	.attr("rx", 3)
+            	.attr("ry", 3)
+            	.attr("width", box.width+2*labelmargin)
+            	.attr("height", box.height)
+  	}
 
   	//                       ,,
   	//                       db
@@ -567,9 +590,9 @@ function drawTimeline(error, stack, descriptions) {
             .scale(width / (s[1] - s[0]))
             .translate(-s[0], 0));
 
-        focus.selectAll(".work").attr("d", workarea);
-        focus.selectAll(".study").attr("d", studyarea);
-        focus.selectAll(".label").selectAll("text").attr("x", o => x(o.date));
+        focus.selectAll(".workarea").attr("d", workarea);
+        focus.selectAll(".studyarea").attr("d", studyarea);
+        focus.selectAll(".label").attr("transform", o => "translate("+ x(o.date) + ")");
 
         // events.forEach(node => {
         //     node.fx = x(node.date);
@@ -594,7 +617,7 @@ function drawTimeline(error, stack, descriptions) {
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
         focus.selectAll(".work").attr("d", workarea);
         focus.selectAll(".study").attr("d", studyarea);
-        focus.selectAll(".label").selectAll("text").attr("x", o => x(o.date));
+        focus.selectAll(".label").attr("transform", o => "translate("+ x(o.date) + ")");
 
         // fix x-axis into bar:
         axis_callback();
