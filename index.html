@@ -125,29 +125,41 @@ d3.queue()
 function drawTimeline(error, stack, descriptions) {
     if (error) throw new Error("no data");
     var yyyy = d3.timeParse("%Y");
-    var labels = [], _labels = {};
+    var labels = [],
+        _labels = {};
+
+    var is_work = function() {
+        var study_or_work = {};
+        descriptions.forEach(o => {
+            study_or_work[o.name] = o.type;
+        });
+
+        return function(item) {
+            return study_or_work[item] == "work";
+        }
+    }();
 
     stack.forEach(year => {
         year["date"] = yyyy(year["date"]);
 
         // determine label x positions
-    	for (job in year) {
-    		if (job != "date") {
-    			if (!_labels[job]) {
-    				_labels[job] = {};
-    				_labels[job]["product"] = 0;
-    				_labels[job]["weight"] = 0;
-    				_labels[job]["top"] = 0;
-    				_labels[job]["topyear"] = 0;
-    			}
-    			if (job == "Värnplikt") console.log(job);
-	    		_labels[job]["product"] += year.date.getTime()*year[job];
-	    		_labels[job]["weight"] += year[job];
-	    		if (_labels[job]["top"] < year[job]) {
-	    			_labels[job]["top"] = year[job];
-	    		}
-    		}
-    	}
+        for (job in year) {
+            if (job != "date") {
+                if (!_labels[job]) {
+                    _labels[job] = {};
+                    _labels[job]["product"] = 0;
+                    _labels[job]["weight"] = 0;
+                    _labels[job]["top"] = 0;
+                    _labels[job]["topyear"] = 0;
+                }
+                if (job == "Värnplikt") console.log(job);
+                _labels[job]["product"] += year.date.getTime() * year[job];
+                _labels[job]["weight"] += year[job];
+                if (_labels[job]["top"] < year[job]) {
+                    _labels[job]["top"] = year[job];
+                }
+            }
+        }
 
         descriptions.forEach(description => {
             if (!year[description.name]) year[description.name] = 0.01;
@@ -156,40 +168,12 @@ function drawTimeline(error, stack, descriptions) {
     });
 
     for (_label in _labels) {
-    	labels.push({"date": new Date(_labels[_label]["product"]/_labels[_label]["weight"]), "name": _label, "y": _labels[_label]["top"]});
+        labels.push({
+            "date": new Date(_labels[_label]["product"] / _labels[_label]["weight"]),
+            "name": _label,
+            "y": _labels[_label]["top"]
+        });
     }
-
-    console.log(labels)
-
-    var studystack = JSON.parse(JSON.stringify(stack)),
-        workstack = JSON.parse(JSON.stringify(stack));
-
-    var study_or_work = {};
-    descriptions.forEach(o => {
-        study_or_work[o.name] = o.type;
-    });
-
-    function is_work(item) {
-        return study_or_work[item] == "work";
-    }
-
-    studystack.forEach(year => {
-        year["date"] = new Date(year["date"]);
-        for (item in year) {
-            if (item != "date" && is_work(item)) {
-                delete(year[item]);
-            }
-        }
-    });
-
-    workstack.forEach(year => {
-        year["date"] = new Date(year["date"]);
-        for (item in year) {
-            if (item != "date" && !is_work(item)) {
-                delete(year[item]);
-            }
-        }
-    });
 
     var brush = d3.brushX()
         .extent([
@@ -257,13 +241,6 @@ function drawTimeline(error, stack, descriptions) {
         .y1(function(d) {
             return y(-d[0]);
         });
-
-    var linkLine = d3.line()
-        .x(e => (e.x))
-        .y(e => (e.y))
-        .curve(d3.curveBasis);
-
-
 
     x.domain([stack[0].date, stack[stack.length - 1].date]);
     y.domain([-1.1, 1.1]);
@@ -434,9 +411,9 @@ function drawTimeline(error, stack, descriptions) {
     var workkeys = descriptions.filter(o => o.type == "work").map(o => o.name);
     var studykeys = descriptions.filter(o => o.type == "study").map(o => o.name);
 
-    var workdata = d3.stack().keys(workkeys).order(d3.stackOrderNone)(workstack);
+    var workdata = d3.stack().keys(workkeys).order(d3.stackOrderNone)(stack);
 
-    var studydata = d3.stack().keys(studykeys).order(d3.stackOrderNone)(studystack);
+    var studydata = d3.stack().keys(studykeys).order(d3.stackOrderNone)(stack);
 
     var workcolor = d3.scaleSequential(d3.interpolateOranges).domain([0, 10]);
     var studycolor = d3.scaleSequential(d3.interpolateBlues).domain([5, -5]);
@@ -510,46 +487,52 @@ function drawTimeline(error, stack, descriptions) {
     // .JMML.`Moo9^Yo.P^YbmdP'   `Mbmmd'.JMML.M9mmmP'
 
 
-  	focus.selectAll("g.label")
-  		.data(labels)
-  		.enter()
-		.append("g")
-  		.attr("class", o => {
-  			return "label " + (is_work(o.name) ? "worklabel" : "studylabel");
-  		})
-  		.append("text")
-  		.attr("y", o => {
-  			var sign = is_work(o.name) ? 1 : -1;
-  			return y(sign * Math.sqrt(o.y)/1.2);
-  		})
-  		.text(o => o.name)
-  		.each(rectify);
+    focus.selectAll("g.label")
+        .data(labels)
+        .enter()
+        .append("g")
+        .attr("class", o => {
+            return "label " + (is_work(o.name) ? "worklabel" : "studylabel");
+        })
+        // .append("circle")
+        // .attr("r", 4)
+        // .attr("y", o => {
+        //     //debugger;
+        // });
+    .append("text")
+    .attr("y", o => {
+    	var sign = is_work(o.name) ? 1 : -1;
+    	console.log(o.name, is_work(o.name));
+    	return y(sign * Math.sqrt(o.y)/1.1)+5;
+    })
+    .text(o => o.name)
+    .each(rectify);
 
-  	function rectify(d,i) {
-            var labelmargin = 4;
-            var parent = d3.select(this.parentNode);
-            var box = this.getBBox();
-            box.x += d3.select(this).attr("x");
+    function rectify(d, i) {
+        var labelmargin = 4;
+        var parent = d3.select(this.parentNode);
+        var box = this.getBBox();
+        box.x += d3.select(this).attr("x");
 
-            parent.insert("rect", ":first-child")
-            	.attr("x", box.x-labelmargin)
-            	.attr("y", box.y)
-            	.attr("rx", 3)
-            	.attr("ry", 3)
-            	.attr("width", box.width+2*labelmargin)
-            	.attr("height", box.height)
-  	}
+        parent.insert("rect", ":first-child")
+            .attr("x", box.x - labelmargin)
+            .attr("y", box.y)
+            .attr("rx", 3)
+            .attr("ry", 3)
+            .attr("width", box.width + 2 * labelmargin)
+            .attr("height", box.height)
+    }
 
-  	//                       ,,
-  	//                       db
-  	
-  	//  ,6"Yb.  `7M'   `MF'`7MM  ,pP"Ybd
-  	// 8)   MM    `VA ,V'    MM  8I   `"
-  	//  ,pm9MM      XMX      MM  `YMMMa.
-  	// 8M   MM    ,V' VA.    MM  L.   I8
-  	// `Moo9^Yo..AM.   .MA..JMML.M9mmmP'
-  	
-  	
+    //                       ,,
+    //                       db
+
+    //  ,6"Yb.  `7M'   `MF'`7MM  ,pP"Ybd
+    // 8)   MM    `VA ,V'    MM  8I   `"
+    //  ,pm9MM      XMX      MM  `YMMMa.
+    // 8M   MM    ,V' VA.    MM  L.   I8
+    // `Moo9^Yo..AM.   .MA..JMML.M9mmmP'
+
+
 
     focus.append("g")
         .attr("class", "axis axis--x focus")
@@ -592,7 +575,7 @@ function drawTimeline(error, stack, descriptions) {
 
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
-        focus.selectAll(".label").attr("transform", o => "translate("+ x(o.date) + ")");
+        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.date) + ")");
 
         // events.forEach(node => {
         //     node.fx = x(node.date);
@@ -617,7 +600,7 @@ function drawTimeline(error, stack, descriptions) {
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
         focus.selectAll(".work").attr("d", workarea);
         focus.selectAll(".study").attr("d", studyarea);
-        focus.selectAll(".label").attr("transform", o => "translate("+ x(o.date) + ")");
+        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.date) + ")");
 
         // fix x-axis into bar:
         axis_callback();
