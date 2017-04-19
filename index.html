@@ -22,7 +22,8 @@
 			<div class="outdent">curriculum vitae</div>
 			VISUALISED
 		</h2>
-<h5 class="byline">Christian Lagerkvist</h5>
+<!-- <h5 class="byline">Christian Lagerkvist</h5>
+ --></div>
 </div>
 </div>
 <div class="row">
@@ -35,7 +36,7 @@ time
 </label>
 </div>
  -->
-<svg width="900" height="400">
+<svg width="900" height="520">
 <defs>
 <filter id="dropshadow" height="200%">
 <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
@@ -57,24 +58,27 @@ time
 </defs>
 </svg>
 </div>
-</div>
 </section>
 </body>
 <script src="js/lib/d3.min.js"></script>
 <script src="js/lib/d3-scale-chromatic.v1.min.js"></script>
 <script src="js/lib/least-squares.js"></script>
+<script src="js/lib/textwrap.js"></script>
+<script src="js/lib/d3-bboxCollide.min.js"></script>
 <script>
-var svg = d3.select("svg"),
-    margin = {
-        top: 20,
-        right: 30,
-        bottom: 110,
+var svg = d3.select("svg");
+svg.attr("width", d3.select("body").node().getBoundingClientRect().width);
+
+var margin = {
+        top: 120,
+        right: 0,
+        bottom: 170,
         left: 0
     },
     margin2 = {
-        top: 330,
-        right: 30,
-        bottom: 30,
+        top: 470,
+        right: 0,
+        bottom: 20,
         left: 0
     },
     width = +svg.attr("width") - margin.left - margin.right,
@@ -83,6 +87,7 @@ var svg = d3.select("svg"),
 
 var x = d3.scaleTime().range([0, width]),
     x2 = d3.scaleTime().range([0, width]),
+    x2_to_x = d3.scaleLinear().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
     y2 = d3.scaleLinear().range([height2, 0]);
 
@@ -96,8 +101,8 @@ function y_formatter(tick) {
     var ret = "";
     if (tick == 0) return ret;
     ret = d3.format(".0%")(Math.abs(tick));
-    if (tick == 1) ret += " work";
-    if (tick == -1) ret += " study";
+    if (tick == 1) ret += " arbete";
+    if (tick == -1) ret += " studier/fritid";
     return ret;
 }
 
@@ -152,7 +157,6 @@ function drawTimeline(error, stack, descriptions) {
                     _labels[job]["top"] = 0;
                     _labels[job]["topyear"] = 0;
                 }
-                if (job == "Värnplikt") console.log(job);
                 _labels[job]["product"] += year.date.getTime() * year[job];
                 _labels[job]["weight"] += year[job];
                 if (_labels[job]["top"] < year[job]) {
@@ -167,11 +171,22 @@ function drawTimeline(error, stack, descriptions) {
 
     });
 
+    var dByName = d3.nest().key(o => o.name).rollup(o => o[0]).object(descriptions);
+
     for (_label in _labels) {
+        let d,
+            x = new Date(_labels[_label]["product"] / _labels[_label]["weight"]),
+            y = _labels[_label]["top"];
+
+        if (d = dByName[_label].label) {
+            if (d.x) x = new Date(d.x);
+            if (d.y) y = d.y;
+        }
+
         labels.push({
-            "date": new Date(_labels[_label]["product"] / _labels[_label]["weight"]),
-            "name": _label,
-            "y": _labels[_label]["top"]
+            "x": x,
+            "y": y,
+            "name": _label
         });
     }
 
@@ -196,10 +211,11 @@ function drawTimeline(error, stack, descriptions) {
 
     function axis_callback() {
         // render x-axis as bar:
-        d3.select(".axis--x").select("path.domain").attr("d", "M0,0L0,28L870,28L880,14L870,0Z");
+        var width = svg.attr("width");
+        d3.select(".axis--x").select("path.domain").attr("d", "M0,0L0,28L" + (width) + ",28L+" + (width + 10) + ",14L" + width + ",0Z");
 
         // draw yearlines
-        var yearlines = focus.selectAll("rect.yearline").data(x.ticks(d3.timeYear, 1));
+        var yearlines = focus.selectAll("rect.yearline").data(x2.ticks(d3.timeYear, 1));
         var yearwidth = x(x.ticks(d3.timeYear, 1)[1]) - x(x.ticks(d3.timeYear, 1)[0]);
         yearlines.exit().remove();
         yearlines = yearlines.enter()
@@ -244,169 +260,9 @@ function drawTimeline(error, stack, descriptions) {
 
     x.domain([stack[0].date, stack[stack.length - 1].date]);
     y.domain([-1.1, 1.1]);
+    x2_to_x.domain(x2.range());
     x2.domain(x.domain());
     y2.domain(y.domain());
-
-
-
-    //                                                ,,
-    //                                                db
-
-    //                                      ,pP"Ybd `7MM  `7MMpMMMb.pMMMb.
-    //                                      8I   `"   MM    MM    MM    MM
-    //                                      `YMMMa.   MM    MM    MM    MM
-    //                                      L.   I8   MM    MM    MM    MM
-    //                                      M9mmmP' .JMML..JMML  JMML  JMML.
-
-    /*
-        var beadLinks = [];
-        data.filter(d => d.values.length > 2).forEach(process => {
-            for (var i = 0; i < process.values.length - 1; i++) {
-                beadLinks.push({
-                    source: process.values[i],
-                    target: process.values[i + 1],
-                    interbead: true
-                });
-            }
-        });
-
-        // shadow eventlog for label nodes
-        var labelNodes = [];
-        eventlog.forEach(event => {
-            var label = {
-                type: event.type
-            };
-            labelNodes.push(label);
-            beadLinks.push({
-                source: event,
-                target: label,
-                label: true
-            })
-        });
-
-        simulation = d3.forceSimulation(d3.merge([eventlog, labelNodes]))
-            // .force("charge", d3.forceManyBody().strength(-100))
-            // .force("collide", d3.forceCollide(30))
-            .force("x", d3.forceX(width * 2).strength(0.01))
-            .force("y", d3.forceY(o => {
-                return auditLine.y()(o) - stepHeight(o) * 10
-            }).strength(1))
-            .force("links", d3.forceLink(beadLinks).distance(10))
-            .on("tick", tick);
-
-        var g_nodes = focus.append("g").attr("class", "nodes").style("filter", "url(#dropshadow)");
-
-        var links = focus.selectAll("path.bead").data(simulation.force("links").links());
-        var auditPath = links.enter().filter(l => l.interbead).insert("path", ":first-child")
-            .attr("class", "bead");
-        var shadowPath = links.enter().filter(l => l.interbead).insert("path", ":first-child")
-            .attr("class", "shadowbead").style("filter", "url(#dropshadow)").style("opacity", 0.3);
-        var processheader = focus.selectAll("text").data(data.filter(d => d.values.length > 2)).enter().append("text").attr("class", "processheader").text(o => o.values[0].process).attr("y", height / 4 - margin.top);
-
-        var labels = links.enter().filter(l => l.label).append("g")
-            .style("filter", "url(#dropshadow)")
-            .attr("class", "label").each(function() {
-                d3.select(this)
-                    .append("text")
-                    .text(o => {
-                        return o.source.target ? o.source.type + " (" + o.source.target + ")" : o.source.type;
-
-                    });
-
-                d3.select(this)
-                    .append("path");
-
-                var labelmargin = 4;
-
-                d3.select(this).insert("rect", ":first-child")
-                    .attr("x", function(d) {
-                        var text = this.parentNode.childNodes[1].getBBox();
-                        return text.x - labelmargin;
-                    })
-                    .attr("y", function(d) {
-                        var text = this.parentNode.childNodes[1].getBBox();
-                        return text.y;
-                    })
-                    .attr("width", function(d) {
-                        var text = this.parentNode.childNodes[1].getBBox();
-                        return d.width = text.width + 2 * labelmargin;
-                    })
-                    .attr("height", function(d) {
-                        var text = this.parentNode.childNodes[1].getBBox();
-                        return d.height = text.height;
-                    });
-                d3.select(this).insert("path", ":first-child");
-            })
-
-        var beads = g_nodes.selectAll("g.bead").data(eventlog, n => n.date.getTime() + n.pid);
-
-        beads = beads.enter().append("g").attr("class", "bead").each(function(o) {
-            d3.select(this).append("use").attr("xlink:href", o => "#" + o.device);
-            d3.select(this).filter(single_event).insert("path", ":first-child").attr("class", "singleevent_line").attr("d", o => "M0,0L0,-" + auditLine.y()(0));
-
-        }).merge(beads);
-
-
-        function tick() {
-
-            d3.selectAll(".processheader")
-                .attr("x", o => {
-                    var dateRange = d3.extent(o.values, o => o.date);
-                    var coordRange = dateRange.map(d => {
-                        return auditLine.x()({
-                            date: d
-                        });
-                    });
-                    return coordRange[0];
-                })
-                .style("font-size", o => {
-                    var dateRange = d3.extent(o.values, o => o.date);
-                    var coordRange = dateRange.map(d => {
-                        return auditLine.x()({
-                            date: d
-                        });
-                    });
-                    var width = coordRange[1] - coordRange[0];
-                    return width / 7;
-                });
-
-            d3.selectAll("path.points").attr("d", o => {
-                var pt = o.location.split(",").map(o => +o);
-                return geopath(geojson_pt(pt));
-            });
-
-            beads.attr("transform", o => {
-                return "translate(" + o.fx + "," + o.fy + ")";
-            });
-
-            auditPath.attr("d", link => {
-                if (geo) {
-                    return swoosh(flying_arc(link));
-                } else {
-                    return auditLine([link.source, link.target]);
-                }
-            });
-
-            shadowPath.attr("d", link => {
-                if (geo) {
-                    var source = link.source.location.split(",").map(o => +o);
-                    var target = link.target.location.split(",").map(o => +o);
-
-                    return geopath(geojson_line(source, target));
-                } else {
-                    return "";
-                }
-            });
-
-            d3.selectAll("g.label")
-                .attr("transform", l => "translate(" + l.target.x + "," + l.target.y + ")")
-                .each(function(l) {
-                    var delta = [l.source.x - l.target.x, l.source.y - l.target.y];
-
-                    d3.select(this).select("path").attr("d", "M" + delta.join() + "L0,0L7,0");
-                });
-        }
-        */
 
     var workkeys = descriptions.filter(o => o.type == "work").map(o => o.name);
     var studykeys = descriptions.filter(o => o.type == "study").map(o => o.name);
@@ -477,6 +333,101 @@ function drawTimeline(error, stack, descriptions) {
     //     })
 
 
+    //                                                ,,
+    //                                                db
+
+    //                                      ,pP"Ybd `7MM  `7MMpMMMb.pMMMb.
+    //                                      8I   `"   MM    MM    MM    MM
+    //                                      `YMMMa.   MM    MM    MM    MM
+    //                                      L.   I8   MM    MM    MM    MM
+    //                                      M9mmmP' .JMML..JMML  JMML  JMML.
+
+
+    // todo: Det känns som att nätverket är labilt. Undersök varför allt barkar åt vänster om man tar bort event.fx-tilldelningen.
+    var events = [];
+    descriptions.forEach(o => {
+        if (o.events) o.events.forEach(event => {
+            event.date = event.fx = x2(new Date(event.date));
+            event.type = o.type;
+            events.push(event);
+        });
+    });
+
+    var nodes = d3.merge([events, d3.range(events.length).map((o, i) => {
+        return {
+            "type": events[i].type
+        }
+    })]);
+
+    var links = [];
+    for (let i = 0; i < nodes.length / 2; i++) {
+        links.push({
+            source: i,
+            target: i + nodes.length / 2
+        })
+    }
+
+
+    var simulation = d3.forceSimulation(nodes)
+    	.force("force", d3.forceManyBody().strength(-50))
+        .force("collide", d3.forceCollide()/*d3.bboxCollide([
+            [0, 0],
+            [70, 30]
+        ])*/)
+        .force("y", d3.forceY(o => o.type == "study" ? y(-1.2) : y(1.5)).strength(0.07))
+        // .force("x", d3.forceX(o => {return o.date ? x(o.date) : null}))
+        .force("links", d3.forceLink(links).strength(0.82))
+        .on("tick", tick);
+
+    simulation.nodes().forEach(o => {
+    	o.y = y(0);
+    })
+
+    var wrap = d3.textwrap().bounds({
+        height: 100,
+        width: 130
+    }) /*.method('tspans')*/ ;
+
+    var g_events = focus.selectAll("g.events").data(links);
+    g_events = g_events.enter().append("g").attr("class", "event").each(function(o) {
+        d3.select(this).append("path");
+        d3.select(this).append("text")
+            .text(o.source.description).call(wrap);
+        d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
+
+        if (false) {
+            d3.select(this).insert("circle", ":first-child").attr("class", "source").attr("r", 6).style("fill", "#efefef").style("stroke", "#aaa");
+            d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red");
+        }
+    });
+
+
+    function tick() {
+        g_events.selectAll("path").attr("d", o => {
+            return "M" + x2_to_x(o.source.x) + "," + (o.source.y - 5) + "L" + x2_to_x(o.source.date) + "," + (y(0) - 14);
+        });
+        g_events.selectAll(wrap.method() == "foreignobject" ? "foreignObject" : "text")
+            .attr("x", o => {
+                if (o.source.x > o.target.x && wrap.method() == "foreignobject") return x2_to_x(o.source.x) - 130;
+                return x2_to_x(o.source.x);
+            })
+            .attr("y", o => (o.source.y) - 10)
+            .attr("text-anchor", (o) => {
+                return (o.source.x < o.target.x) ? "start" : "end";
+            })
+            .style("text-align", (o) => {
+                return (o.source.x < o.target.x) ? "left" : "right";
+            })
+            .select("tspan").attr("dx", o => {
+                return (o.source.x < o.target.x) ? "5" : "-5";
+            })
+        g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
+        g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
+        g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
+    }
+
+
+
     //   ,,           ,,                  ,,
     // `7MM          *MM                `7MM
     //   MM           MM                  MM
@@ -499,14 +450,13 @@ function drawTimeline(error, stack, descriptions) {
         // .attr("y", o => {
         //     //debugger;
         // });
-    .append("text")
-    .attr("y", o => {
-    	var sign = is_work(o.name) ? 1 : -1;
-    	console.log(o.name, is_work(o.name));
-    	return y(sign * Math.sqrt(o.y)/1.1)+5;
-    })
-    .text(o => o.name)
-    .each(rectify);
+        .append("text")
+        .attr("y", o => {
+            var sign = is_work(o.name) ? 1 : -1;
+            return y(sign * Math.sqrt(o.y) / 1.1) + 5;
+        })
+        .text(o => o.name)
+        .each(rectify);
 
     function rectify(d, i) {
         var labelmargin = 4;
@@ -522,6 +472,8 @@ function drawTimeline(error, stack, descriptions) {
             .attr("width", box.width + 2 * labelmargin)
             .attr("height", box.height)
     }
+
+
 
     //                       ,,
     //                       db
@@ -567,6 +519,7 @@ function drawTimeline(error, stack, descriptions) {
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
         var s = d3.event.selection || x2.range();
         x.domain(s.map(x2.invert, x2));
+        x2_to_x.domain(s);
 
         focus.select(".axis--x").call(xAxis);
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
@@ -575,37 +528,28 @@ function drawTimeline(error, stack, descriptions) {
 
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
-        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.date) + ")");
-
-        // events.forEach(node => {
-        //     node.fx = x(node.date);
-        //     node.fy = workArea.y()(node);
-        // });
+        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.x) + ")");
 
         // fix x-axis into bar:
         axis_callback();
-        // simulation.alpha(1);
-        // simulation.restart();
-
-
-
+        tick();
     }
 
     function zoomed() {
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
         var t = d3.event.transform;
         x.domain(t.rescaleX(x2).domain());
+        x2_to_x.domain(x.range().map(t.invertX, t));
 
         focus.select(".axis--x").call(xAxis);
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
-        focus.selectAll(".work").attr("d", workarea);
-        focus.selectAll(".study").attr("d", studyarea);
-        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.date) + ")");
+        focus.selectAll(".workarea").attr("d", workarea);
+        focus.selectAll(".studyarea").attr("d", studyarea);
+        focus.selectAll(".label").attr("transform", o => "translate(" + x(o.x) + ")");
 
         // fix x-axis into bar:
         axis_callback();
-        // simulation.alpha(1);
-        // simulation.restart();
+        tick();
     }
 
 }

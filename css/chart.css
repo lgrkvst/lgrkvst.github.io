@@ -98,3 +98,29 @@ path.points {
 .main {
     color: #ccc;
 }
+
+/*
+    ,...
+  .d' ""
+  dM`
+ mMMmm,pW"Wq.`7Mb,od8 ,p6"bo   .gP"Ya
+  MM 6W'   `Wb MM' "'6M'  OO  ,M'   Yb
+  MM 8M     M8 MM    8M       8M""""""
+  MM YA.   ,A9 MM    YM.    , YM.    ,
+.JMML.`Ybmd9'.JMML.   YMbmd'   `Mbmmd'
+
+*/
+
+.event path {
+    stroke:#444;
+    stroke-dasharray: 1 2;
+    stroke-width: 0.75;
+}
+
+.event text, .event foreignObject {
+    font-size:11px;
+    color: black;
+    line-height: 1em;
+    padding-left:5px;
+    padding-right: 5px;
+}
