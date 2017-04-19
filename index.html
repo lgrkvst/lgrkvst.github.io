@@ -360,32 +360,60 @@ function drawTimeline(error, stack, descriptions) {
         });
     });
 
-    var simulation = d3.forceSimulation(events)
-        .force("force", d3.forceManyBody().strength(-80))
-        .force("collide", d3.forceCollide().radius(o => 2+6*Math.sqrt(o.description.length))/*d3.bboxCollide([
-            [0, 0],
-            [180, 30]
-        ])*/)
-        .force("y", d3.forceY(o => o.type == "work" ? y(1)-o.description.length/2 : y(-1)).strength(0.1))
-        .force("x", d3.forceX(o => x2_to_x(o.date)).strength(0.05))
-        .on("tick", tick);
+    var shadows = d3.range(events.length).map((o, i) => {
+        return {
+            "type": events[i].type
+        }
+    });
 
+    var nodes = d3.merge([events, shadows]);
+
+    var links = [];
+    for (let i = 0; i < nodes.length / 2; i++) {
+        links.push({
+            source: nodes[i],
+            target: nodes[i + nodes.length / 2]
+        })
+    }
+
+    var simulation = d3.forceSimulation(nodes)
+        .force("force", d3.forceManyBody().strength(-200))
+        .force("collide", d3.forceCollide().radius(o => o.description ? 2 + 6 * Math.sqrt(o.description.length) : 0)
+            /*d3.bboxCollide([
+                        [0, 0],
+                        [180, 30]
+                    ])*/
+        )
+        .force("y", d3.forceY(o => {
+        	if (o.type == "work") {
+        		if (o.description) return y(1.2) - o.description.length / 4;
+        		return y(1);
+        	} 
+        	return y(-1)}
+        	).strength(o => o.type == "work" ? 0.25 : 0.3))
+        .force("x", d3.forceX(o => o.date ? x2_to_x(o.date) : 0).strength(o => o.date ? 0.5 : 0))
+        .force("links", d3.forceLink(links).distance(50).strength(0.82))
+        .on("tick", tick);
 
     simulation.nodes().forEach((o, i) => {
         o.y = y(0);
-        o.x = x2_to_x(o.date);
-    })
+        try {
+            o.x = o.date ? x2_to_x(o.date) : x2_to_x(events[i - events.length].date);
+        } catch (err) {
+            debugger
+        }
+    });
 
     var wrap = d3.textwrap().bounds({
         height: 100,
         width: 130
     }) /*.method('tspans')*/ ;
 
-    var g_events = focus.selectAll("g.events").data(events);
+    var g_events = focus.selectAll("g.events").data(links);
     g_events = g_events.enter().append("g").attr("class", "event").each(function(o) {
         d3.select(this).append("path");
         d3.select(this).append("text")
-            .text(o.description).call(wrap);
+            .text(o.source.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
         if (false) {
@@ -394,35 +422,35 @@ function drawTimeline(error, stack, descriptions) {
         }
     });
 
-    var labelline = d3.line().curve(d3.curveStepBefore.radius(6));
+    var labelline = d3.line();
 
     function tick() {
         g_events.selectAll("path").attr("d", o => {
             var pt = [
-                [x2_to_x(o.x), (o.y - 5)],
-                [x2_to_x(o.date), y(0) - 14]
+                [x2_to_x(o.source.x), (o.source.y - 5)],
+                [x2_to_x(o.source.date), y(0) - 14]
             ];
             return labelline(pt);
 
         });
         g_events.selectAll(wrap.method() == "foreignobject" ? "foreignObject" : "text")
             .attr("x", o => {
-                if (o.date > o.x && wrap.method() == "foreignobject") return x2_to_x(o.x) - 130;
-                return x2_to_x(o.x);
+                if (o.source.x > o.target.x && wrap.method() == "foreignobject") return x2_to_x(o.source.x) - 130;
+                return x2_to_x(o.source.x);
             })
-            .attr("y", o => (o.y) - 10)
+            .attr("y", o => (o.source.y) - 10)
             .attr("text-anchor", (o) => {
-                return (o.date < o.x) ? "start" : "end";
+                return (o.source.x < o.target.x) ? "start" : "end";
             })
             .style("text-align", (o) => {
-                return (o.date < o.x) ? "left" : "right";
+                return (o.source.x < o.target.x) ? "left" : "right";
             })
             .select("tspan").attr("dx", o => {
                 return (o.date < o.x) ? "5" : "-5";
             })
-            // g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
-            // g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
-            // g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
+        g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
+        g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
+        g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
     }
 
 
