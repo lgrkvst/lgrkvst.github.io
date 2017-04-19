@@ -134,14 +134,16 @@ function drawTimeline(error, stack, descriptions) {
     var labels = [],
         _labels = {};
 
-    var is_work = function() {
+    var work = function() {
         var study_or_work = {};
         descriptions.forEach(o => {
             study_or_work[o.name] = o.type;
         });
 
-        return function(item) {
-            return study_or_work[item] == "work";
+        return {
+            type: function(item) {
+                return study_or_work[item.name ||  item.key];
+            }
         }
     }();
 
@@ -267,19 +269,20 @@ function drawTimeline(error, stack, descriptions) {
 
     var workkeys = descriptions.filter(o => o.type == "work").map(o => o.name);
     var studykeys = descriptions.filter(o => o.type == "study").map(o => o.name);
+    var hobbykeys = descriptions.filter(o => o.type == "hobby").map(o => o.name);
 
-    var workdata = d3.stack().keys(workkeys).order(d3.stackOrderNone)(stack);
-
-    var studydata = d3.stack().keys(studykeys).order(d3.stackOrderNone)(stack);
+    var abovedata = d3.stack().keys(workkeys).order(d3.stackOrderNone)(stack);
+    var belowdata = d3.stack().keys(d3.merge([studykeys, hobbykeys])).order(d3.stackOrderNone)(stack);
 
     var workcolor = d3.scaleSequential(d3.interpolateOranges).domain([0, 10]);
     var studycolor = d3.scaleSequential(d3.interpolateBlues).domain([5, -5]);
+    var hobbycolor = d3.scaleSequential(d3.interpolateGreys).domain([1, 8]);
 
 
     focus.append("g")
         .attr("transform", "translate(0,-10)")
         .selectAll("path")
-        .data(workdata)
+        .data(abovedata)
         .enter()
         .each(function(o, i) {
             d3.select(this)
@@ -300,21 +303,26 @@ function drawTimeline(error, stack, descriptions) {
     focus.append("g")
         .attr("transform", "translate(0,10)")
         .selectAll("path")
-        .data(studydata)
+        .data(belowdata)
         .enter()
         .each(function(o, i) {
             d3.select(this)
                 .append("path")
-                .attr("class", "stream studyarea")
-                .attr("fill", "url(#study_gradient_" + i + ")");
+                .attr("class", "stream " + work.type(o) + "area")
+                .attr("fill", "url(#" + work.type(o) + "_gradient_" + i + ")");
             d3.select(this)
                 .append("defs")
                 .append("linearGradient")
-                .attr("id", "study_gradient_" + o.index)
+                .attr("id", work.type(o) + "_gradient_" + o.index)
                 .attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", 1)
                 .each(function(oo) {
-                    d3.select(this).append("stop").attr("offset", "0%").attr("stop-color", studycolor(i - 2)).attr("stop-opacity", "0.5");
-                    d3.select(this).append("stop").attr("offset", "100%").attr("stop-color", studycolor(i));
+                    if (work.type(oo) == "study") {
+                        d3.select(this).append("stop").attr("offset", "0%").attr("stop-color", studycolor(i - 2)).attr("stop-opacity", "0.5");
+                        d3.select(this).append("stop").attr("offset", "100%").attr("stop-color", studycolor(i));
+                    } else {
+                        d3.select(this).append("stop").attr("offset", "0%").attr("stop-color", hobbycolor(i - 2)).attr("stop-opacity", "0.5");
+                        d3.select(this).append("stop").attr("offset", "100%").attr("stop-color", hobbycolor(i));
+                    }
                 })
         })
 
@@ -343,46 +351,29 @@ function drawTimeline(error, stack, descriptions) {
     //                                      L.   I8   MM    MM    MM    MM
     //                                      M9mmmP' .JMML..JMML  JMML  JMML.
 
-
-    // todo: Det känns som att nätverket är labilt. Undersök varför allt barkar åt vänster om man tar bort event.fx-tilldelningen.
     var events = [];
     descriptions.forEach(o => {
         if (o.events) o.events.forEach(event => {
-            event.date =  x2(new Date(event.date));
+            event.date = x2(new Date(event.date));
             event.type = o.type;
             events.push(event);
         });
     });
 
-    var nodes = d3.merge([events, d3.range(events.length).map((o, i) => {
-        return {
-            "type": events[i].type
-        }
-    })]);
-
-    var links = [];
-    for (let i = 0; i < nodes.length / 2; i++) {
-        links.push({
-            source: i,
-            target: i + nodes.length / 2
-        })
-    }
-
-
-    var simulation = d3.forceSimulation(nodes)
-    	.force("force", d3.forceManyBody().strength(-80))
-        .force("collide", d3.bboxCollide([
+    var simulation = d3.forceSimulation(events)
+        .force("force", d3.forceManyBody().strength(-80))
+        .force("collide", d3.forceCollide().radius(o => 2+6*Math.sqrt(o.description.length))/*d3.bboxCollide([
             [0, 0],
-            [110, 10]
-        ]))
-        .force("y", d3.forceY(o => o.type == "study" ? y(-1.2) : y(1.5)).strength(0.1))
-        .force("x", d3.forceX(o => o.date ? x2_to_x(o.date) : null).strength(o => o.date ? 0.2 : 0))
-        .force("links", d3.forceLink(links).strength(0.82))
+            [180, 30]
+        ])*/)
+        .force("y", d3.forceY(o => o.type == "work" ? y(1)-o.description.length/2 : y(-1)).strength(0.1))
+        .force("x", d3.forceX(o => x2_to_x(o.date)).strength(0.05))
         .on("tick", tick);
 
-    simulation.nodes().forEach((o,i) => {
-    	o.y = y(0);
-    	o.x = o.date ? x2_to_x(o.date) : x2_to_x(events[i-events.length].date);
+
+    simulation.nodes().forEach((o, i) => {
+        o.y = y(0);
+        o.x = x2_to_x(o.date);
     })
 
     var wrap = d3.textwrap().bounds({
@@ -390,11 +381,11 @@ function drawTimeline(error, stack, descriptions) {
         width: 130
     }) /*.method('tspans')*/ ;
 
-    var g_events = focus.selectAll("g.events").data(links);
+    var g_events = focus.selectAll("g.events").data(events);
     g_events = g_events.enter().append("g").attr("class", "event").each(function(o) {
         d3.select(this).append("path");
         d3.select(this).append("text")
-            .text(o.source.description).call(wrap);
+            .text(o.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
         if (false) {
@@ -407,29 +398,31 @@ function drawTimeline(error, stack, descriptions) {
 
     function tick() {
         g_events.selectAll("path").attr("d", o => {
-        	var pt = [[x2_to_x(o.source.x), (o.source.y - 5)],
-        			  [x2_to_x(o.source.date), y(0) - 14]];
-        	return labelline(pt);
+            var pt = [
+                [x2_to_x(o.x), (o.y - 5)],
+                [x2_to_x(o.date), y(0) - 14]
+            ];
+            return labelline(pt);
 
         });
         g_events.selectAll(wrap.method() == "foreignobject" ? "foreignObject" : "text")
             .attr("x", o => {
-                if (o.source.x > o.target.x && wrap.method() == "foreignobject") return x2_to_x(o.source.x) - 130;
-                return x2_to_x(o.source.x);
+                if (o.date > o.x && wrap.method() == "foreignobject") return x2_to_x(o.x) - 130;
+                return x2_to_x(o.x);
             })
-            .attr("y", o => (o.source.y) - 10)
+            .attr("y", o => (o.y) - 10)
             .attr("text-anchor", (o) => {
-                return (o.source.x < o.target.x) ? "start" : "end";
+                return (o.date < o.x) ? "start" : "end";
             })
             .style("text-align", (o) => {
-                return (o.source.x < o.target.x) ? "left" : "right";
+                return (o.date < o.x) ? "left" : "right";
             })
             .select("tspan").attr("dx", o => {
-                return (o.source.x < o.target.x) ? "5" : "-5";
+                return (o.date < o.x) ? "5" : "-5";
             })
-        g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
-        g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
-        g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
+            // g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
+            // g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
+            // g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
     }
 
 
@@ -448,17 +441,10 @@ function drawTimeline(error, stack, descriptions) {
         .data(labels)
         .enter()
         .append("g")
-        .attr("class", o => {
-            return "label " + (is_work(o.name) ? "worklabel" : "studylabel");
-        })
-        // .append("circle")
-        // .attr("r", 4)
-        // .attr("y", o => {
-        //     //debugger;
-        // });
+        .attr("class", o => "label " + work.type(o) + "label")
         .append("text")
         .attr("y", o => {
-            var sign = is_work(o.name) ? 1 : -1;
+            var sign = work.type(o) == "work" ? 1 : -1;
             return y(sign * Math.sqrt(o.y) / 1.1) + 5;
         })
         .text(o => o.name)
@@ -534,6 +520,7 @@ function drawTimeline(error, stack, descriptions) {
 
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
+        focus.selectAll(".hobbyarea").attr("d", studyarea);
         focus.selectAll(".label").attr("transform", o => "translate(" + x(o.x) + ")");
 
         // fix x-axis into bar:
@@ -553,6 +540,7 @@ function drawTimeline(error, stack, descriptions) {
         context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
+        focus.selectAll(".hobbyarea").attr("d", studyarea);
         focus.selectAll(".label").attr("transform", o => "translate(" + x(o.x) + ")");
 
         // fix x-axis into bar:

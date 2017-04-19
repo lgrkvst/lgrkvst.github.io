@@ -27,10 +27,16 @@
       },
       "events": [{
           "date": "1996-06",
-          "description": "Master of Computer Science (160p)"
+          "description": "Påbörjar <b>Master of Computer Science</b> (160p)"
       }, {
           "date": "1998",
           "description": "Engagerad inom nationslivet: stipendienämnd, PR-ansvarig, körordförande, studentfadder m m"
+      }, {
+          "date": "2002",
+          "description": "Utbytesår:  <b>Julius-Maximilian Universität</b>, Würzburg, Tyskland"
+      }, {
+          "date": "2005",
+          "description": "Exjobb (20p) vid Institutionen för informationsteknologi: <br><b>Information Visualization &mdash; effect on working memory and power of deduction.</b>"
       }]
   }, {
       "name": "TextCenter AB",
@@ -47,10 +53,10 @@
           "description": "Projektledning: re:PDF (marknadsföring-försäljning)"
       }, {
           "date": "2004",
-          "description": "PR-kampanj – Halvsidor i Ny Teknik, Computer Sweden och AGI"
+          "description": "<b>Solo-PR-kampanj</b><br>Halvsidor i Ny Teknik, Computer Sweden och AGI"
       }, {
           "date": "2009",
-          "description": "Föreläser i entreprenörsskap och bolagskapitalisering"
+          "description": "Föreläser i <b>entreprenörsskap och bolagskapitalisering</b>"
       }]
   }, {
       "name": "Primona AB",
@@ -60,14 +66,14 @@
           "description": "Föreläser i databas-driven webbutveckling"
       }, {
           "date": "2001",
-          "description": "Kursansvarig Datorgrafik 5p (SU/KTH)"
+          "description": "<b>Kursansvarig Datorgrafik 5p</b> (SU/KTH)"
       }]
   }, {
       "name": "ByteWize AB",
       "type": "work",
       "events": [{
           "date": "2005",
-          "description": "Affärsutveckling, försäljning"
+          "description": "Renodlar produktmatris, fokuserar verksamheten"
       }]
   }, {
       "name": "Nordic Touch AB",
@@ -78,7 +84,7 @@
       },
       "events": [{
           "date": "2006",
-          "description": "Head of Marketing, Sverige/Finland"
+          "description": "<b>Head of Marketing</b><br>Sverige/Finland"
       }]
   }, {
       "name": "CONNECT Sverige",
@@ -97,17 +103,20 @@
       },
       "events": [{
           "date": "2010-06",
-          "description": "Deltar i förvaltning och migreringsprojekt"
+          "description": "Får helhetssyn genom att jobba med bankens blankettförvaltning"
+      },{
+          "date": "2011-06",
+          "description": "Tar fram och lanserar bankens gröna blankettprofil"
       }]
   }, {
       "name": "SEB (arkitekt)",
       "type": "work",
       "events": [{
           "date": "2013",
-          "description": "Solution Area Architect för ECM"
+          "description": "<b>Solution Area Architect</b> för ECM"
       }, {
           "date": "2013-06",
-          "description": "Solution Area Architect för Processing Support"
+          "description": "<b>Solution Area Architect</b> för Processing Support"
       }]
   }, {
       "name": "Certifierad IT-arkitekt",
@@ -117,30 +126,50 @@
       }
   }, {
       "name": "SEB (intraprenör)",
-      "type": "work"
+      "type": "work",
+      "events": [{
+            "date": "2015-05",
+            "description": "<b>Innovation Lab#1</b><br><i>Retailförsäljning i realtid</i>"
+      },{
+            "date": "2015-10",
+            "description": "<b>Innovation Lab#2</b><br><i>Blockchain Arena</i>"
+      },{
+            "date": "2016-02",
+            "description": "<b>Innovation Lab</b><br><i>Disrupting SEB Kort</i>"
+      },{
+            "date": "2016-05",
+            "description": "Tar fram Observatoriet"
+      },{
+            "date": "2017-03",
+            "description": "Tar fram Landing Page för Continuous Delivery"
+      },{
+            "date": "2017-04",
+            "description": "3D-animerar kortfilm för SEB:s internationella Impact Alpha-lansering"
+      }]
   }, {
       "name": "Spherofix AB",
-      "type": "study",
+      "type": "hobby",
       "label": {
           "x": "2008"
       },
       "events": [{
-        "date": "2008",
-        "description": "Styrelseledamot, Spherofix AB"
-      },{
-        "date": "2012",
-        "description": "Styrelseordförande, Spherofix AB"
-      }
-      ]
+          "date": "2008",
+          "description": "<b>Styrelseledamot</b><br> Spherofix AB"
+      }, {
+          "date": "2012",
+          "description": "<b>Styrelseordförande</b><br>Spherofix AB"
+      }]
   }, {
       "name": "Rätt Spår AB",
-      "type": "study",
+      "type": "hobby",
       "label": {
           "x": "2011"
       },
       "events": [{
-        "date": "2011",
-        "description": "Styrelseordförande, Rätt Spår AB"
-      }
-      ]
+          "date": "2011",
+          "description": "<b>Styrelseordförande</b><br>Rätt Spår AB"
+      }, {
+          "date": "2015",
+          "description": "Rätt Spår break-even"
+      }]
   }]
