@@ -347,7 +347,7 @@ function drawTimeline(error, stack, descriptions) {
     var events = [];
     descriptions.forEach(o => {
         if (o.events) o.events.forEach(event => {
-            event.date = event.fx = x2(new Date(event.date));
+            event.date = event.x = x2(new Date(event.date));
             event.type = o.type;
             events.push(event);
         });
@@ -369,18 +369,19 @@ function drawTimeline(error, stack, descriptions) {
 
 
     var simulation = d3.forceSimulation(nodes)
-    	.force("force", d3.forceManyBody().strength(-50))
-        .force("collide", d3.forceCollide()/*d3.bboxCollide([
+    	.force("force", d3.forceManyBody().strength(-100))
+        .force("collide", d3.bboxCollide([
             [0, 0],
-            [70, 30]
-        ])*/)
-        .force("y", d3.forceY(o => o.type == "study" ? y(-1.2) : y(1.5)).strength(0.07))
-        // .force("x", d3.forceX(o => {return o.date ? x(o.date) : null}))
+            [100, 10]
+        ]))
+        .force("y", d3.forceY(o => o.type == "study" ? y(-1.2) : y(1.5)).strength(0.1))
+        .force("x", d3.forceX(o => o.date ? x2_to_x(o.date) : null).strength(o => o.date ? 0.2 : 0))
         .force("links", d3.forceLink(links).strength(0.82))
         .on("tick", tick);
 
-    simulation.nodes().forEach(o => {
+    simulation.nodes().forEach((o,i) => {
     	o.y = y(0);
+    	o.x = o.date ? x2_to_x(o.date) : x2_to_x(events[i-events.length].date);
     })
 
     var wrap = d3.textwrap().bounds({
@@ -395,7 +396,7 @@ function drawTimeline(error, stack, descriptions) {
             .text(o.source.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
-        if (false) {
+        if (true) {
             d3.select(this).insert("circle", ":first-child").attr("class", "source").attr("r", 6).style("fill", "#efefef").style("stroke", "#aaa");
             d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red");
         }
@@ -533,6 +534,8 @@ function drawTimeline(error, stack, descriptions) {
         // fix x-axis into bar:
         axis_callback();
         tick();
+        simulation.alpha(1);
+        simulation.restart();
     }
 
     function zoomed() {
@@ -550,6 +553,8 @@ function drawTimeline(error, stack, descriptions) {
         // fix x-axis into bar:
         axis_callback();
         tick();
+        simulation.alpha(1);
+        simulation.restart();
     }
 
 }
