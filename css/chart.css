@@ -115,6 +115,7 @@ path.points {
     stroke:#444;
     stroke-dasharray: 1 2;
     stroke-width: 0.75;
+    fill: none;
 }
 
 .event text, .event foreignObject {

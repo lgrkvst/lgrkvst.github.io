@@ -61,6 +61,7 @@ time
 </section>
 </body>
 <script src="js/lib/d3.min.js"></script>
+<script src="http://localhost:8080/d3-shape-1.0.4/build/d3-shape.js"></script>
 <script src="js/lib/d3-scale-chromatic.v1.min.js"></script>
 <script src="js/lib/least-squares.js"></script>
 <script src="js/lib/textwrap.js"></script>
@@ -347,7 +348,7 @@ function drawTimeline(error, stack, descriptions) {
     var events = [];
     descriptions.forEach(o => {
         if (o.events) o.events.forEach(event => {
-            event.date = event.x = x2(new Date(event.date));
+            event.date =  x2(new Date(event.date));
             event.type = o.type;
             events.push(event);
         });
@@ -369,10 +370,10 @@ function drawTimeline(error, stack, descriptions) {
 
 
     var simulation = d3.forceSimulation(nodes)
-    	.force("force", d3.forceManyBody().strength(-100))
+    	.force("force", d3.forceManyBody().strength(-80))
         .force("collide", d3.bboxCollide([
             [0, 0],
-            [100, 10]
+            [110, 10]
         ]))
         .force("y", d3.forceY(o => o.type == "study" ? y(-1.2) : y(1.5)).strength(0.1))
         .force("x", d3.forceX(o => o.date ? x2_to_x(o.date) : null).strength(o => o.date ? 0.2 : 0))
@@ -396,16 +397,20 @@ function drawTimeline(error, stack, descriptions) {
             .text(o.source.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
-        if (true) {
+        if (false) {
             d3.select(this).insert("circle", ":first-child").attr("class", "source").attr("r", 6).style("fill", "#efefef").style("stroke", "#aaa");
             d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red");
         }
     });
 
+    var labelline = d3.line().curve(d3.curveStepBefore.radius(6));
 
     function tick() {
         g_events.selectAll("path").attr("d", o => {
-            return "M" + x2_to_x(o.source.x) + "," + (o.source.y - 5) + "L" + x2_to_x(o.source.date) + "," + (y(0) - 14);
+        	var pt = [[x2_to_x(o.source.x), (o.source.y - 5)],
+        			  [x2_to_x(o.source.date), y(0) - 14]];
+        	return labelline(pt);
+
         });
         g_events.selectAll(wrap.method() == "foreignobject" ? "foreignObject" : "text")
             .attr("x", o => {
