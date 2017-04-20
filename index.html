@@ -392,7 +392,7 @@ function drawTimeline(error, stack, descriptions) {
     }
 
     var simulation = d3.forceSimulation(nodes)
-        .force("force", d3.forceManyBody().strength(-140))
+        .force("force", d3.forceManyBody().strength(-150))
         .force("collide", d3.forceCollide().radius(o => o.description ? 2 + 5 * Math.sqrt(o.description.length) : 0)
             /*d3.bboxCollide([
                         [0, 0],
@@ -401,11 +401,11 @@ function drawTimeline(error, stack, descriptions) {
         )
         .force("y", d3.forceY(o => {
             if (o.type == "work") {
-                if (o.description) return y(1);
+                if (o.description) return y(1.5);
                 return y(1);
             }
-            return y(-1)
-        }).strength(o => o.type == "work" ? 0.2 : 0.3))
+            return y(-0.7)
+        }).strength(o => o.type == "work" ? 0.3 : 0.2))
         .force("x", d3.forceX(o => {
             return o.date * 0.99 ? (o.date) : width / 2
         }).strength(o => o.date ? 0.5 : 0.05))
