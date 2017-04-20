@@ -85,6 +85,9 @@
       "events": [{
           "date": "2006",
           "description": "<b>Head of Marketing</b><br>Sverige/Finland"
+      },{
+          "date": "2006-06",
+          "description": "Genomför gerillakampanj i <br><b>Rikstäckande TV</b>"
       }]
   }, {
       "name": "CONNECT Sverige",
@@ -103,7 +106,7 @@
       },
       "events": [{
           "date": "2010-06",
-          "description": "Får helhetssyn genom att jobba med bankens blankettförvaltning"
+          "description": "ISD förvaltning<br>ECM/e-form"
       },{
           "date": "2011-06",
           "description": "Tar fram och lanserar bankens gröna blankettprofil"
@@ -113,10 +116,10 @@
       "type": "work",
       "events": [{
           "date": "2013",
-          "description": "<b>Solution Area Architect</b> för ECM"
+          "description": "<b>Solution Area <br>Architect</b> &mdash; ECM"
       }, {
           "date": "2013-06",
-          "description": "<b>Solution Area Architect</b> för Processing Support"
+          "description": "<b>Solution Area Architect</b> &mdash; Processing Support"
       }]
   }, {
       "name": "Certifierad IT-arkitekt",
@@ -128,23 +131,29 @@
       "name": "SEB (intraprenör)",
       "type": "work",
       "events": [{
+            "date": "2014-08",
+            "description": "Lanserar<br><b>Observatoriet</b>"
+      },{
             "date": "2015-05",
             "description": "<b>Innovation Lab#1</b><br><i>Retailförsäljning i realtid</i>"
       },{
             "date": "2015-10",
             "description": "<b>Innovation Lab#2</b><br><i>Blockchain Arena</i>"
       },{
+            "date": "2015-11-10",
+            "description": "Deltar i första <br><b>Waterfront 2025</b>"
+      },{
             "date": "2016-02",
             "description": "<b>Innovation Lab</b><br><i>Disrupting SEB Kort</i>"
       },{
-            "date": "2016-05",
-            "description": "Tar fram Observatoriet"
+            "date": "2016-11",
+            "description": "Representerar SEB i<br>paneldebatt om Framtidens Pengar"
       },{
             "date": "2017-03",
-            "description": "Tar fram Landing Page för Continuous Delivery"
+            "description": "Projektleder bankens <br><b>IBM Watson</b>-initiativ"
       },{
             "date": "2017-04",
-            "description": "3D-animerar kortfilm för SEB:s internationella Impact Alpha-lansering"
+            "description": "<b>3D-animerar kortfilm</b> för internationell hedgelansering"
       }]
   }, {
       "name": "Spherofix AB",
@@ -170,6 +179,6 @@
           "description": "<b>Styrelseordförande</b><br>Rätt Spår AB"
       }, {
           "date": "2015",
-          "description": "Rätt Spår break-even"
+          "description": "Rätt Spår <b>break-even</b>"
       }]
   }]

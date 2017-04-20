@@ -38,6 +38,19 @@ time
  -->
 <svg width="900" height="520">
 <defs>
+<linearGradient id="lgrad" x1="50%" y1="100%" x2="50%" y2="0%">
+<stop offset="0%" style="stop-color:rgb(152,152,152);stop-opacity:1" />
+<stop offset="6%" style="stop-color:rgb(113,113,113);stop-opacity:1" />
+<stop offset="49%" style="stop-color:rgb(81,81,81);stop-opacity:1" />
+<stop offset="50%" style="stop-color:rgb(33,33,33);stop-opacity:1" />
+<stop offset="90%" style="stop-color:rgb(83,83,83);stop-opacity:1" />
+<stop offset="100%" style="stop-color:rgb(152,152,152);stop-opacity:1" />
+</linearGradient> 
+
+
+
+
+
 <filter id="dropshadow" height="200%">
 <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
 <!-- stdDeviation is how much to blur -->
@@ -71,31 +84,32 @@ var svg = d3.select("svg");
 svg.attr("width", d3.select("body").node().getBoundingClientRect().width);
 
 var margin = {
-        top: 120,
+        top: 150,
         right: 0,
-        bottom: 170,
+        bottom: 150,
         left: 0
     },
     margin2 = {
-        top: 470,
+        top: 0,
         right: 0,
-        bottom: 20,
+        bottom: 490,
         left: 0
     },
     width = +svg.attr("width") - margin.left - margin.right,
     height = +svg.attr("height") - margin.top - margin.bottom,
+    width2 = +svg.attr("width") - margin2.left - margin2.right,
     height2 = +svg.attr("height") - margin2.top - margin2.bottom;
 
 var x = d3.scaleTime().range([0, width]),
-    x2 = d3.scaleTime().range([0, width]),
+    x2 = d3.scaleTime().range([0, width2]),
     x2_to_x = d3.scaleLinear().range([0, width]),
     y = d3.scaleLinear().range([height, 0]),
     y2 = d3.scaleLinear().range([height2, 0]);
 
-var startRange = [81, width];
+var startRange = [81, width2];
 
 var xAxis = d3.axisBottom(x),
-    xAxis2 = d3.axisBottom(x2),
+    xAxis2 = d3.axisTop(x2),
     yAxis = d3.axisRight(y).ticks(4).tickFormat(y_formatter);
 
 function y_formatter(tick) {
@@ -196,19 +210,19 @@ function drawTimeline(error, stack, descriptions) {
     var brush = d3.brushX()
         .extent([
             [0, 0],
-            [width, height2]
+            [width2, height2]
         ])
-        .on("brush end", brushed);
+        .on("start brush end", brushed);
 
     var zoom = d3.zoom()
-        .scaleExtent([1, Infinity])
+        .scaleExtent([1, 2])
         .translateExtent([
             [0, 0],
-            [width, height]
+            [width2, height]
         ])
         .extent([
             [0, 0],
-            [width, height]
+            [width2, height]
         ])
         .on("zoom", zoomed);
 
@@ -261,7 +275,7 @@ function drawTimeline(error, stack, descriptions) {
             return y(-d[0]);
         });
 
-    x.domain([stack[0].date, stack[stack.length - 1].date]);
+    x.domain([stack[0].date, d3.timeYear.offset(stack[stack.length - 1].date, 0)]);
     y.domain([-1.1, 1.1]);
     x2_to_x.domain(x2.range());
     x2.domain(x.domain());
@@ -354,6 +368,7 @@ function drawTimeline(error, stack, descriptions) {
     var events = [];
     descriptions.forEach(o => {
         if (o.events) o.events.forEach(event => {
+            event.originalDate = new Date(event.date);
             event.date = x2(new Date(event.date));
             event.type = o.type;
             events.push(event);
@@ -377,31 +392,29 @@ function drawTimeline(error, stack, descriptions) {
     }
 
     var simulation = d3.forceSimulation(nodes)
-        .force("force", d3.forceManyBody().strength(-200))
-        .force("collide", d3.forceCollide().radius(o => o.description ? 2 + 6 * Math.sqrt(o.description.length) : 0)
+        .force("force", d3.forceManyBody().strength(-140))
+        .force("collide", d3.forceCollide().radius(o => o.description ? 2 + 5 * Math.sqrt(o.description.length) : 0)
             /*d3.bboxCollide([
                         [0, 0],
                         [180, 30]
                     ])*/
         )
         .force("y", d3.forceY(o => {
-        	if (o.type == "work") {
-        		if (o.description) return y(1.2) - o.description.length / 4;
-        		return y(1);
-        	} 
-        	return y(-1)}
-        	).strength(o => o.type == "work" ? 0.25 : 0.3))
-        .force("x", d3.forceX(o => o.date ? x2_to_x(o.date) : 0).strength(o => o.date ? 0.5 : 0))
-        .force("links", d3.forceLink(links).distance(50).strength(0.82))
+            if (o.type == "work") {
+                if (o.description) return y(1);
+                return y(1);
+            }
+            return y(-1)
+        }).strength(o => o.type == "work" ? 0.2 : 0.3))
+        .force("x", d3.forceX(o => {
+            return o.date * 0.99 ? (o.date) : width / 2
+        }).strength(o => o.date ? 0.5 : 0.05))
+        .force("links", d3.forceLink(links).distance(10).strength(0.82))
         .on("tick", tick);
 
     simulation.nodes().forEach((o, i) => {
         o.y = y(0);
-        try {
-            o.x = o.date ? x2_to_x(o.date) : x2_to_x(events[i - events.length].date);
-        } catch (err) {
-            debugger
-        }
+        o.x = o.date ? x2_to_x(o.date) : x2_to_x(events[i - events.length].date);
     });
 
     var wrap = d3.textwrap().bounds({
@@ -416,13 +429,12 @@ function drawTimeline(error, stack, descriptions) {
             .text(o.source.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
-        if (false) {
-            d3.select(this).insert("circle", ":first-child").attr("class", "source").attr("r", 6).style("fill", "#efefef").style("stroke", "#aaa");
-            d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red");
+        if (true) {
+            d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red").style("opacity", "0.1");
         }
     });
 
-    var labelline = d3.line();
+    var labelline = d3.line().curve(d3.curveStepBefore.radius(6));
 
     function tick() {
         g_events.selectAll("path").attr("d", o => {
@@ -448,7 +460,6 @@ function drawTimeline(error, stack, descriptions) {
             .select("tspan").attr("dx", o => {
                 return (o.date < o.x) ? "5" : "-5";
             })
-        g_events.selectAll("circle.source").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y);
         g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
         g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.source.x)).attr("cy", o => o.source.y - 5).style("fill");
     }
@@ -473,7 +484,7 @@ function drawTimeline(error, stack, descriptions) {
         .append("text")
         .attr("y", o => {
             var sign = work.type(o) == "work" ? 1 : -1;
-            return y(sign * Math.sqrt(o.y) / 1.1) + 5;
+            return y(sign * Math.sqrt(o.y) / 1.4) + 15;
         })
         .text(o => o.name)
         .each(rectify);
@@ -492,6 +503,20 @@ function drawTimeline(error, stack, descriptions) {
             .attr("width", box.width + 2 * labelmargin)
             .attr("height", box.height)
     }
+
+    // draw now
+    focus.selectAll("g.now").data([new Date()]).enter()
+        .append("g")
+        .each(function(o) {
+            d3.select(this).append("path").attr("class", "nowpath");
+            d3.select(this).append("g")
+                .attr("class", "now")
+                .append("text")
+                .attr("class", "nowlabel")
+                .attr("text-anchor", "middle")
+                .text("now").each(rectify);
+        });
+
 
 
 
@@ -519,12 +544,10 @@ function drawTimeline(error, stack, descriptions) {
     context.append("g")
         .attr("class", "axis axis--x context")
         .attr("transform", "translate(0," + height2 + ")")
-        .call(xAxis2);
+//        .call(xAxis2);
 
     context.append("g")
-        .attr("class", "brush")
-        .call(brush)
-        .call(brush.move, startRange);
+        .attr("class", "brush");
 
     svg.append("rect")
         .attr("class", "zoom")
@@ -533,24 +556,55 @@ function drawTimeline(error, stack, descriptions) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
         .call(zoom);
 
+    context.call(brush);
+
+     var handle = context.selectAll(".handle--custom")
+    //     .data([{
+    //         type: "w"
+    //     }, {
+    //         type: "e"
+    //     }])
+    //     .enter().append("path")
+    //     .attr("class", "handle--custom")
+    //     .attr("fill", "url(#lgrad)")
+    //     .attr("fill-opacity", 0.3)
+    //     .attr("cursor", "ew-resize")
+    //     .attr("d", d3.arc()
+    //         .innerRadius(0)
+    //         .outerRadius(height2 / 2)
+    //         .startAngle(0)
+    //         .endAngle(function(d, i) {
+    //             return i ? Math.PI : -Math.PI;
+    //         }));
+
+    context.call(brush.move, startRange);
+    // d3.select("rect.selection").style("fill", "url(#lgrad)");
+    context.style("opacity", "0.2");
+
 
 
     function brushed() {
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
         var s = d3.event.selection || x2.range();
+
+        handle.attr("display", null).attr("transform", function(d, i) {
+            return "translate(" + s[i] + "," + height2 / 2 + ")";
+        });
+
         x.domain(s.map(x2.invert, x2));
         x2_to_x.domain(s);
 
         focus.select(".axis--x").call(xAxis);
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-            .scale(width / (s[1] - s[0]))
+            .scale(width2 / (s[1] - s[0]))
             .translate(-s[0], 0));
 
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
         focus.selectAll(".hobbyarea").attr("d", studyarea);
         focus.selectAll(".label").attr("transform", o => "translate(" + x(o.x) + ")");
-
+        focus.select(".nowpath").attr("d", o => "M" + x(o) + "," + y(0) + "L" + x(o) + "," + y(-0.7))
+        focus.select(".now").attr("transform", o => "translate(" + x(o) + "," + y(-0.7) + ")");
         // fix x-axis into bar:
         axis_callback();
         tick();
@@ -562,10 +616,10 @@ function drawTimeline(error, stack, descriptions) {
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
         var t = d3.event.transform;
         x.domain(t.rescaleX(x2).domain());
-        x2_to_x.domain(x.range().map(t.invertX, t));
+        x2_to_x.domain(x2.range().map(t.invertX, t));
 
         focus.select(".axis--x").call(xAxis);
-        context.select(".brush").call(brush.move, x.range().map(t.invertX, t));
+        context.call(brush.move, x2.range().map(t.invertX, t));
         focus.selectAll(".workarea").attr("d", workarea);
         focus.selectAll(".studyarea").attr("d", studyarea);
         focus.selectAll(".hobbyarea").attr("d", studyarea);
