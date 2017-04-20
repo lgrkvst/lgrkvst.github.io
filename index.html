@@ -382,17 +382,17 @@ function drawTimeline(error, stack, descriptions) {
     });
 
    var simulation = d3.forceSimulation(events)
-        .force("force", d3.forceManyBody().strength(-80))
+        .force("force", d3.forceManyBody().strength(-10))
         .force("collide", d3.bboxCollide(o => [
             [0, 0], [130, o.description.length/20*13]
         ]))
-        .force("y", d3.forceY(o => o.type == "work" ? y(1)-o.description.length/2 : y(-1)).strength(0.1))
+        .force("y", d3.forceY(o => o.type == "work" ? y(1.5)-o.description.length/2 : y(-1)).strength(0.05))
         .force("x", d3.forceX(o => {
         	let x = x2_to_x(o.date);
-        	if (x > bodyrect.width-100) return x-100;
+        	if (x > bodyrect.width-150) return x-150;
         	if (x < 100) return x+100;
         	return x;
-        }).strength(0.25))
+        }).strength(0.35))
         .on("tick", tick);
 
     simulation.nodes().forEach((o, i) => {
