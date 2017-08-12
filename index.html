@@ -437,7 +437,7 @@ function drawTimeline(error, stack, descriptions) {
 
     var g_events = focus.selectAll("g.events").data(events);
     g_events = g_events.enter().append("g").attr("class", "event")
-    .filter(n => n.weight >= 4)
+    .filter(n => n.weight >= 3)
         .each(function(o) {
         d3.select(this).append("path");
         d3.select(this).append("text")

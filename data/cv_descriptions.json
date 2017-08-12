@@ -180,8 +180,12 @@
             "weight": 5,
             "description": "Projektleder bankens <br><b>IBM Watson</b>-initiativ"
       },{
+            "date": "2017-03",
+            "weight": 5,
+            "description": "Projektleder banken i <br><b>Productive 4.0 (EU)</b>"
+      },{
             "date": "2017-04",
-            "weight": 3,
+            "weight": 2,
             "description": "<b>3D-animerar kortfilm</b> inför hedgelansering"
       }]
   }, {
