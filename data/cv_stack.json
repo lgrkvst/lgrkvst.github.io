@@ -102,8 +102,6 @@
     "Certifierad IT-arkitekt": 0.1,
     "Spherofix AB": 0.1,
     "Rätt Spår AB": 0.1
-
-
 }, {
     "date": 2015,
     "SEB (arkitekt)": 1,
@@ -120,7 +118,8 @@
     "date": 2017,
     "SEB (intraprenör)": 1,
     "Spherofix AB": 0.1,
-    "Rätt Spår AB": 0.1
+    "Rätt Spår AB": 0.1,
+    "Arrowhead IoT-arkitekt": 0.1
 }, {
     "date": 2018
 }]
