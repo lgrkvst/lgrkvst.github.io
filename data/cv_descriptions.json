@@ -7,6 +7,7 @@
       },
       "events": [{
           "date": "1993",
+          "weight": 5,
           "description": "Treårig teknisk gymnasieutbildning"
       }]
   }, {
@@ -14,9 +15,11 @@
       "type": "study",
       "events": [{
           "date": "1996",
+          "weight": 5,
           "description": "Plutonsbefäl, MekB10, Strängnäs"
       }, {
           "date": "1996-03",
+          "weight": 5,
           "description": "B-körkort"
       }]
   }, {
@@ -27,15 +30,19 @@
       },
       "events": [{
           "date": "1996-06",
+          "weight": 5,
           "description": "Påbörjar <b>Master of Computer Science</b> (160p)"
       }, {
           "date": "1998",
+          "weight": 2,
           "description": "Engagerad inom nationslivet: stipendienämnd, PR-ansvarig, körordförande, studentfadder m m"
       }, {
           "date": "2002",
+          "weight": 5,
           "description": "Utbytesår:  <b>Julius-Maximilian Universität</b>, Würzburg, Tyskland"
       }, {
           "date": "2005",
+          "weight": 4,
           "description": "Exjobb (20p) vid Institutionen för informationsteknologi: <br><b>Information Visualization &mdash; effect on working memory and power of deduction.</b>"
       }]
   }, {
@@ -47,15 +54,19 @@
       },
       "events": [{
           "date": "1997",
+          "weight": 5,
           "description": "Front dev, design+copy"
       }, {
           "date": "2002",
+          "weight": 3,
           "description": "Projektledning: re:PDF (marknadsföring-försäljning)"
       }, {
           "date": "2004",
-          "description": "<b>Solo-PR-kampanj</b><br>Halvsidor i Ny Teknik, Computer Sweden och AGI"
+          "weight": 4,
+          "description": "<b>PR-kampanj</b><br>Halvsidor i Ny Teknik, Computer Sweden och AGI"
       }, {
           "date": "2009",
+          "weight": 5,
           "description": "Föreläser i <b>entreprenörsskap och bolagskapitalisering</b>"
       }]
   }, {
@@ -63,9 +74,11 @@
       "type": "work",
       "events": [{
           "date": "1999",
+          "weight": 4,
           "description": "Föreläser i databas-driven webbutveckling"
       }, {
           "date": "2001",
+          "weight": 5,
           "description": "<b>Kursansvarig Datorgrafik 5p</b> (SU/KTH)"
       }]
   }, {
@@ -73,6 +86,7 @@
       "type": "work",
       "events": [{
           "date": "2005",
+          "weight": 5,
           "description": "Renodlar produktmatris, fokuserar verksamheten"
       }]
   }, {
@@ -84,9 +98,11 @@
       },
       "events": [{
           "date": "2006",
+          "weight": 5,
           "description": "<b>Head of Marketing</b><br>Sverige/Finland"
       },{
           "date": "2006-06",
+          "weight": 5,
           "description": "Genomför gerillakampanj i <br><b>Rikstäckande TV</b>"
       }]
   }, {
@@ -95,6 +111,7 @@
       "description": "Projektledare",
       "events": [{
           "date": "2008-06",
+          "weight": 5,
           "description": "Scoutar och coachar startup-bolag"
       }]
   }, {
@@ -106,9 +123,11 @@
       },
       "events": [{
           "date": "2010-06",
+          "weight": 2,
           "description": "ISD förvaltning<br>ECM/e-form"
       },{
           "date": "2011-06",
+          "weight": 3,
           "description": "Tar fram och lanserar bankens gröna blankettprofil"
       }]
   }, {
@@ -116,9 +135,11 @@
       "type": "work",
       "events": [{
           "date": "2013",
+          "weight": 5,
           "description": "<b>Solution Area <br>Architect</b> &mdash; ECM"
       }, {
           "date": "2013-06",
+          "weight": 2,
           "description": "<b>Solution Area Architect</b> &mdash; Processing Support"
       }]
   }, {
@@ -132,27 +153,35 @@
       "type": "work",
       "events": [{
             "date": "2014-08",
+            "weight": 2,
             "description": "Lanserar<br><b>Observatoriet</b>"
       },{
             "date": "2015-05",
+            "weight": 4,
             "description": "<b>Innovation Lab#1</b><br><i>Retailförsäljning i realtid</i>"
       },{
             "date": "2015-10",
+            "weight": 5,
             "description": "<b>Innovation Lab#2</b><br><i>Blockchain Arena</i>"
       },{
             "date": "2015-11-10",
-            "description": "Deltar i första <br><b>Waterfront 2025</b>"
+            "weight": 5,
+            "description": "Deltar i första <br><b>SEB Waterfront 2025</b> inför 3000 anställda"
       },{
             "date": "2016-02",
+            "weight": 4,
             "description": "<b>Innovation Lab</b><br><i>Disrupting SEB Kort</i>"
       },{
             "date": "2016-11",
+            "weight": 5,
             "description": "Representerar SEB i<br>paneldebatt om Framtidens Pengar"
       },{
             "date": "2017-03",
+            "weight": 5,
             "description": "Projektleder bankens <br><b>IBM Watson</b>-initiativ"
       },{
             "date": "2017-04",
+            "weight": 3,
             "description": "<b>3D-animerar kortfilm</b> inför hedgelansering"
       }]
   }, {
@@ -163,9 +192,11 @@
       },
       "events": [{
           "date": "2008",
+            "weight": 5,
           "description": "<b>Styrelseledamot</b><br> Spherofix AB"
       }, {
           "date": "2012",
+            "weight": 5,
           "description": "<b>Styrelseordförande</b><br>Spherofix AB"
       }]
   }, {
@@ -176,9 +207,17 @@
       },
       "events": [{
           "date": "2011",
+            "weight": 5,
           "description": "<b>Styrelseordförande</b><br>Rätt Spår AB"
       }, {
           "date": "2015",
+            "weight": 2,
           "description": "Rätt Spår <b>break-even</b>"
       }]
+  },{
+    "name": "Arrowhead IoT-arkitekt",
+    "type": "study",
+    "label": {
+      "y": 0.2
+    }
   }]

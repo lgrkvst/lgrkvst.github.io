@@ -45,12 +45,7 @@ time
 <stop offset="50%" style="stop-color:rgb(33,33,33);stop-opacity:1" />
 <stop offset="90%" style="stop-color:rgb(83,83,83);stop-opacity:1" />
 <stop offset="100%" style="stop-color:rgb(152,152,152);stop-opacity:1" />
-</linearGradient> 
-
-
-
-
-
+</linearGradient>
 <filter id="dropshadow" height="200%">
 <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
 <!-- stdDeviation is how much to blur -->
@@ -79,6 +74,7 @@ time
 <script src="js/lib/least-squares.js"></script>
 <script src="js/lib/textwrap.js"></script>
 <script src="js/lib/d3-bboxCollide.min.js"></script>
+<script src="js/lib/dat.gui.min.js"></script>
 <script>
 var svg = d3.select("svg");
 var bodyrect = d3.select("body").node().getBoundingClientRect();
@@ -371,28 +367,52 @@ function drawTimeline(error, stack, descriptions) {
         width: 130
     }) /*.method('tspans')*/ ;
 
+    function fitHeight(string) {
+        return string.length / 4 + 3.5;
+    }
+
     var events = [];
     descriptions.forEach(o => {
         if (o.events) o.events.forEach(event => {
             event.originalDate = new Date(event.date);
             event.date = x2(new Date(event.date));
             event.type = o.type;
+            event.height = fitHeight(event.description);
             events.push(event);
         });
     });
 
-   var simulation = d3.forceSimulation(events)
-        .force("force", d3.forceManyBody().strength(-10))
-        .force("collide", d3.bboxCollide(o => [
-            [0, 0], [130, o.description.length/20*13]
-        ]))
-        .force("y", d3.forceY(o => o.type == "work" ? y(1.5)-o.description.length/2 : y(-1)).strength(0.05))
+        var force = {
+            force: 20,
+            collide: 0.1,
+            y: 0.1,
+            x: 0.45
+        };
+    
+
+    // var force = {
+    //     force: -148,
+    //     collide: 0.03,
+    //     x: 0.9,
+    //     y: 0.18
+    // };
+
+    var simulation = d3.forceSimulation(events)
+        .force("force", d3.forceManyBody().strength(force.force))
+        .force("collide", d3.bboxCollide(o => {
+            let ret = [
+                [-133 / 2, -o.height],
+                [133 / 2, o.height]
+            ];
+            return ret;
+        }).strength(force.collide).iterations(0.1))
+        .force("y", d3.forceY(o => o.type == "work" ? y(1.5) : y(-1.5)).strength(0.1).strength(force.y))
         .force("x", d3.forceX(o => {
-        	let x = x2_to_x(o.date);
-        	if (x > bodyrect.width-150) return x-150;
-        	if (x < 100) return x+100;
-        	return x;
-        }).strength(0.35))
+            let x = x2_to_x(o.date);
+            if (x >= bodyrect.width - 150) return x - 150;
+            if (x < 100) return x + 100;
+            return x;
+        }).strength(force.x))
         .on("tick", tick);
 
     simulation.nodes().forEach((o, i) => {
@@ -400,14 +420,16 @@ function drawTimeline(error, stack, descriptions) {
         o.x = x2_to_x(o.date);
     })
 
-	var g_events = focus.selectAll("g.events").data(events);
-    g_events = g_events.enter().append("g").attr("class", "event").each(function(o) {
+    var g_events = focus.selectAll("g.events").data(events);
+    g_events = g_events.enter().append("g").attr("class", "event")
+    .filter(n => n.weight >= 4)
+        .each(function(o) {
         d3.select(this).append("path");
         d3.select(this).append("text")
             .text(o.description).call(wrap);
         d3.select(this).append("circle").attr("class", "lineend").attr("r", 2).style("fill", "#444");
 
-        if (false) {
+        if (true) {
             d3.select(this).insert("circle", ":first-child").attr("class", "target").attr("r", 3).style("fill", "red").style("opacity", "0.1");
         }
     });
@@ -415,30 +437,58 @@ function drawTimeline(error, stack, descriptions) {
     var labelline = d3.line().curve(d3.curveStepBefore.radius(6));
 
     function tick() {
+
+
+
+    	
         g_events.selectAll("path").attr("d", o => {
-            var pt = [
-                [x2_to_x(o.x), (o.y - 5)],
-                [x2_to_x(o.date), y(0) - 14]
-            ];
+            var pt;
+
+            if (x2_to_x(o.date) > x2_to_x(o.x) + 133 / 2) {
+                pt = [
+                    [x2_to_x(o.x) + 133 / 2, (o.y - 5)],
+                    [x2_to_x(o.date), y(0) - 14]
+                ];
+            } else if (x2_to_x(o.date) < x2_to_x(o.x) - 133 / 2) {
+                pt = [
+                    [x2_to_x(o.x) - 133 / 2, (o.y - 5)],
+                    [x2_to_x(o.date), y(0) - 14]
+                ];
+            } else {
+                if (o.type == "work") {
+                    pt = [
+                        [x2_to_x(o.date), (o.y + fitHeight(o.description))],
+                        [x2_to_x(o.date), y(0) - 14]
+                    ];
+                } else {
+                    pt = [
+                        [x2_to_x(o.date), (o.y - 15)],
+                        [x2_to_x(o.date), y(0) - 14]
+                    ];
+
+                }
+            }
             return labelline(pt);
         });
+
         g_events.selectAll(wrap.method() == "foreignobject" ? "foreignObject" : "text")
-            .attr("x", o => {
-                if (o.date > o.x && wrap.method() == "foreignobject") return x2_to_x(o.x) - 130;
-                return x2_to_x(o.x);
+            .attr("transform", function(o) {
+                var ret = "translate(";
+                ret += x2_to_x(o.x) - 133 / 2;
+                ret += "," + (o.y - fitHeight(o.description)) + ")";
+                return ret;
             })
-            .attr("y", o => (o.y) - 10)
             .attr("text-anchor", (o) => {
-                return (o.date < o.x) ? "start" : "end";
+                return (x2_to_x(o.date) < x2_to_x(o.x)) ? "start" : "end";
             })
             .style("text-align", (o) => {
-                return (o.date < o.x) ? "left" : "right";
+                return (x2_to_x(o.date) < x2_to_x(o.x)) ? "left" : "right";
             })
             .select("tspan").attr("dx", o => {
                 return (o.date < o.x) ? "5" : "-5";
             })
-        g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
-        g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.x)).attr("cy", o => o.y - 5).style("fill");
+            // g_events.selectAll("circle.target").attr("cx", o => x2_to_x(o.target.x)).attr("cy", o => o.target.y);
+        // g_events.selectAll("circle.lineend").attr("cx", o => x2_to_x(o.x)).attr("cy", o => o.y - 5).style("fill");
     }
 
 
@@ -521,7 +571,7 @@ function drawTimeline(error, stack, descriptions) {
     context.append("g")
         .attr("class", "axis axis--x context")
         .attr("transform", "translate(0," + height2 + ")")
-//        .call(xAxis2);
+        //        .call(xAxis2);
 
     context.append("g")
         .attr("class", "brush");
@@ -535,24 +585,24 @@ function drawTimeline(error, stack, descriptions) {
 
     context.call(brush);
 
-     var handle = context.selectAll(".handle--custom")
-    //     .data([{
-    //         type: "w"
-    //     }, {
-    //         type: "e"
-    //     }])
-    //     .enter().append("path")
-    //     .attr("class", "handle--custom")
-    //     .attr("fill", "url(#lgrad)")
-    //     .attr("fill-opacity", 0.3)
-    //     .attr("cursor", "ew-resize")
-    //     .attr("d", d3.arc()
-    //         .innerRadius(0)
-    //         .outerRadius(height2 / 2)
-    //         .startAngle(0)
-    //         .endAngle(function(d, i) {
-    //             return i ? Math.PI : -Math.PI;
-    //         }));
+    var handle = context.selectAll(".handle--custom")
+        //     .data([{
+        //         type: "w"
+        //     }, {
+        //         type: "e"
+        //     }])
+        //     .enter().append("path")
+        //     .attr("class", "handle--custom")
+        //     .attr("fill", "url(#lgrad)")
+        //     .attr("fill-opacity", 0.3)
+        //     .attr("cursor", "ew-resize")
+        //     .attr("d", d3.arc()
+        //         .innerRadius(0)
+        //         .outerRadius(height2 / 2)
+        //         .startAngle(0)
+        //         .endAngle(function(d, i) {
+        //             return i ? Math.PI : -Math.PI;
+        //         }));
 
     context.call(brush.move, startRange);
     // d3.select("rect.selection").style("fill", "url(#lgrad)");
@@ -608,6 +658,36 @@ function drawTimeline(error, stack, descriptions) {
         simulation.alpha(1);
         simulation.restart();
     }
+
+    //        ,,                                           ,,
+    //      `7MM           mm                              db
+    //        MM           MM
+    //   ,M""bMM   ,6"Yb.mmMMmm     .P"Ybmmm `7MM  `7MM  `7MM
+    // ,AP    MM  8)   MM  MM      :MI  I8     MM    MM    MM
+    // 8MI    MM   ,pm9MM  MM       WmmmP"     MM    MM    MM
+    // `Mb    MM  8M   MM  MM   ,, 8M          MM    MM    MM
+    //  `Wbmd"MML.`Moo9^Yo.`Mbmodb  YMMMMMb    `Mbod"YML..JMML.
+    //                             6'     dP
+    //                             Ybmmmd'
+
+    var guivars = function()  {
+        this.force = force.force;
+        this.collide = force.collide;
+        this.x = force.x;
+        this.y = force.y;
+    }
+
+    function GUICHANGE(change) {
+        simulation.force(this.property).strength(change);
+        simulation.alpha(1);
+        simulation.restart();
+    }
+    text = new guivars();
+    var gui = new dat.GUI();
+    gui.add(text, "force", -200, 200).onChange(GUICHANGE);
+    gui.add(text, "collide", 0, 1).onChange(GUICHANGE);
+    gui.add(text, "x", 0, 1).onChange(GUICHANGE);
+    gui.add(text, "y", 0, 1).onChange(GUICHANGE);
 
 }
 </script>
