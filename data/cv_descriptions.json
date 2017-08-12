@@ -136,7 +136,7 @@
       "events": [{
           "date": "2013",
           "weight": 5,
-          "description": "<b>Solution Area <br>Architect</b> &mdash; ECM"
+          "description": "<b>Solution Area Architect</b><br>ECM &mdash; 45 IT-system"
       }, {
           "date": "2013-06",
           "weight": 2,
@@ -167,6 +167,10 @@
             "date": "2015-11-10",
             "weight": 5,
             "description": "Deltar i första <br><b>SEB Waterfront 2025</b> inför 3000 anställda"
+      },{
+            "date": "2015-12-10",
+            "weight": 5,
+            "description": "<b>R3 Architectual Stream</b><br>London"
       },{
             "date": "2016-02",
             "weight": 4,
