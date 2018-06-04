@@ -103,7 +103,7 @@
       },{
           "date": "2006-06",
           "weight": 5,
-          "description": "Genomför gerillakampanj i <br><b>Rikstäckande TV</b>"
+          "description": "Genomför gerillakampanj i <br>Rikstäckande TV"
       }]
   }, {
       "name": "CONNECT Sverige",
@@ -170,7 +170,7 @@
       },{
             "date": "2015-12-10",
             "weight": 5,
-            "description": "<b>R3 Architectual Stream</b><br>London"
+            "description": "<b>R3/Corda Architectual Stream</b><br>London"
       },{
             "date": "2016-02",
             "weight": 4,
@@ -180,7 +180,7 @@
             "weight": 5,
             "description": "Representerar SEB i<br>paneldebatt om Framtidens Pengar"
       },{
-            "date": "2017-03",
+            "date": "2018-01",
             "weight": 5,
             "description": "Projektleder bankens <br><b>IBM Watson</b>-initiativ"
       },{
@@ -192,6 +192,13 @@
             "weight": 2,
             "description": "<b>3D-animerar kortfilm</b> inför hedgelansering"
       }]
+  }, {
+    "name": "SEB Strategy Office",
+    "type": "work",
+    "label": {
+      "x":"2017-11",
+      "y": 0.4
+    }
   }, {
       "name": "Spherofix AB",
       "type": "hobby",
